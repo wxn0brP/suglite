@@ -17,6 +17,7 @@ interface SugliteConfig {
     ignore?: string[];
     restart_cmd?: string;
     events?: Record<string, string>;
+    history?: number;
 }
 
 // Default configuration
@@ -27,6 +28,7 @@ export let config: SugliteConfig = {
     ignore: [],
     restart_cmd: "",
     events: {},
+    history: 100,
 };
 
 // Predefined configurations

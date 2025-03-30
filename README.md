@@ -45,6 +45,7 @@ Create a `suglite.json` file in your project directory eg:
   "watch": ["src"],
   "ignore": ["node_modules"],
   "restart_cmd": "clear",
+  "history": 100,
   "events": {
     "clean": "rm -rf dist"
   }

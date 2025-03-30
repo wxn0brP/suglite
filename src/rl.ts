@@ -3,11 +3,31 @@ import { config } from "./config";
 import { COLORS, log } from "./logger";
 import Readline from "readline";
 import { killHard, startProcess, stopProcess } from "./process";
+import { appendFileSync, existsSync, readFileSync, writeFileSync } from "fs";
 
 export const customCommandsProcess = new Map<string, ChildProcess>();
 
+if (config.history && config.history > 0) {
+    if(!existsSync(".suglite_history")) writeFileSync(".suglite_history", "");
+}
+
+function readHistory() {
+    return existsSync(".suglite_history") ? readFileSync(".suglite_history", "utf8").split("\n") : [];
+}
+
+function appendHistory(input: string) {
+    appendFileSync(".suglite_history", input + "\n");
+}
+
+const rlOpts: Readline.ReadLineOptions = {
+    input: process.stdin,
+    output: process.stdout,
+    historySize: config.history,
+    history: readHistory(),
+}
+
 // Handle terminal input events
-const rl = Readline.createInterface({ input: process.stdin, output: process.stdout });
+const rl = Readline.createInterface(rlOpts);
 rl.on("line", (input) => {
     const cmdTrim = input.trim();
     
@@ -22,6 +42,7 @@ rl.on("line", (input) => {
     if (cmdTrim.startsWith("$")) {
         const noLog = cmdTrim.startsWith("$!");
         runCustomCommand(cmdTrim.slice(noLog ? 2 : 1), noLog);
+        if (config.history && config.history > 0) appendHistory(cmdTrim);
         return;
     }
 
