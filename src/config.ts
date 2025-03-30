@@ -1,3 +1,4 @@
+import { homedir } from "os";
 import { COLORS, log } from "./logger";
 import { deepMerge } from "./utils";
 import fs from "fs";
@@ -5,6 +6,14 @@ import fs from "fs";
 // Paths to configuration files
 const configPath = "suglite.json";
 const packagePath = "package.json";
+
+// Paths to global configuration
+const globalConfigDir = (
+    process.platform === "win32" ?
+        process.env.APPDATA || "" :
+        homedir() + "/.config"
+) + "/suglite";
+const globalConfigPath = globalConfigDir + "/config.json";
 
 // Determine if executed with `node suglite.js` or as `./suglite`
 const isDirectExec = process.argv[0].includes("node");
@@ -32,7 +41,16 @@ export let config: SugliteConfig = {
 };
 
 // Predefined configurations
-export const preConfigsList = fs.readdirSync(import.meta.dirname + "/../config").map((file) => file.replace(".json", ""));
+export const preConfigsList =
+    fs.readdirSync(import.meta.dirname + "/../config")
+        .map((file) => file.replace(".json", ""));
+
+// Load global configuration
+if (fs.existsSync(globalConfigPath)) {
+    const globalConfig = JSON.parse(fs.readFileSync(globalConfigPath, "utf8"));
+    config = deepMerge(config, globalConfig);
+    log(COLORS.cyan, "Global configuration loaded from: " + globalConfigPath);
+}
 
 // Parse arguments
 const rawArgs = process.argv.slice(isDirectExec ? 2 : 1);
@@ -54,6 +72,7 @@ if (ifFlag("h") || (scriptArgs.length >= 1 && scriptArgs[0] === "--help")) {
     log(COLORS.yellow, "", "  -c <cmd>      \t Use custom command");
     log(COLORS.yellow, "", "  -mc [name]    \t Make configuration (name for predefined configs)");
     log(COLORS.yellow, "", "  --any=value   \t Set any configuration value");
+    log(COLORS.yellow, "", "  -mgc          \t Make global configuration");
     process.exit(0);
 }
 
@@ -68,7 +87,7 @@ if (ifFlag("p")) {
         log(COLORS.green, "Available predefined configurations:");
         preConfigsList.forEach((key) => {
             log(COLORS.yellow, "", `${key}`);
-        })
+        });
         process.exit(0);
     }
     const preConfigName = scriptArgs[1];
@@ -97,9 +116,23 @@ if (ifFlag("mc")) {
     process.exit(0);
 }
 
+if (ifFlag("mgc")) {
+    if (fs.existsSync(globalConfigPath)) {
+        log(COLORS.red, "Global configuration already exists.");
+        process.exit(1);
+    }
+
+    if (!fs.existsSync(globalConfigDir)) fs.mkdirSync(globalConfigDir, { recursive: true });
+
+    fs.writeFileSync(globalConfigPath, JSON.stringify(config, null, 4));
+    log(COLORS.green, "Global configuration made at: " + globalConfigPath + ".");
+    process.exit(0);
+}
+
 // Load `suglite.json` if exists
 if (fs.existsSync(configPath)) {
-    config = deepMerge(config, JSON.parse(fs.readFileSync(configPath, "utf8")));
+    const localConfig = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    config = deepMerge(config, localConfig);
 }
 
 if (ifFlag("c")) {
@@ -107,7 +140,7 @@ if (ifFlag("c")) {
     config.cmd = scriptArgs.join(" ");
 }
 
-for(const arg of scriptArgs) {
+for (const arg of scriptArgs) {
     if (arg.startsWith("--")) {
         let [key, value] = arg.slice(2).split("=");
         if (

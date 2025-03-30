@@ -70,3 +70,9 @@ While `suglite` is running, you can type:
 | `$!<command>` | execute a custom command with pretty logging |
 | `<event>` | execute a custom command from `events` |
 | `<!event>` | execute a custom command from `events` without pretty logging |
+
+## Global Configuration  
+
+Global configuration is stored in:
+- Linux: `~/.config/suglite/config.json`.
+- Windows: `%APPDATA%\suglite\config.json`.
