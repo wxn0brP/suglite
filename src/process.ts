@@ -1,6 +1,7 @@
 import { exec, spawn, ChildProcess, execSync } from "child_process";
 import { COLORS, log } from "./logger";
 import { config, processedCmd } from "./config";
+import { customCommandsProcess } from "./rl";
 
 export let proc: ChildProcess | null = null;
 let restartTimeout: NodeJS.Timeout | null = null;
@@ -87,7 +88,7 @@ function isProcessAlive(pid: number): boolean {
     }
 }
 
-function killHard(pid: number) {
+export function killHard(pid: number) {
     try {
         if (process.platform === "win32") {
             execSync(`taskkill /F /PID ${pid} /T`);
@@ -104,6 +105,7 @@ function killHard(pid: number) {
 process.on("exit", () => stopProcess());
 async function exitEvent() {
     await stopProcess();
+    customCommandsProcess.forEach((process) => killHard(process.pid));
     process.exit();
 }
 process.on("SIGINT", exitEvent);
