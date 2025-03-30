@@ -36,14 +36,12 @@ rl.on("line", (input) => {
     const cmdEvents = config.events[eventKey];
     if (cmdEvents) {
         runCustomCommand(cmdEvents, !isNoLog);
-        return;
     }
 
     if (cmdTrim.startsWith("$")) {
         const noLog = cmdTrim.startsWith("$!");
         runCustomCommand(cmdTrim.slice(noLog ? 2 : 1), noLog);
         if (config.history && config.history > 0) appendHistory(cmdTrim);
-        return;
     }
 
     switch (cmdTrim) {
