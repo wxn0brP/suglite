@@ -61,12 +61,13 @@ export function handleCliArgs(data: CliArgsData) {
         if (arg.includes("=")) [key, value] = arg.slice(2).split("=");
         else {
             // --any value value
-            for (let j = i + 1; j < scriptArgs.length; j++) {
-                if (scriptArgs[j].startsWith("--")) {
-                    [key, value] = [arg.slice(2), scriptArgs.slice(i + 1, j).join(" ")];
-                    break;
-                }
+            const index = scriptArgs.slice(i + 1).findIndex(arg => arg.startsWith("--"));
+            if (index !== -1) {
+                value = scriptArgs.slice(i, index);
+                i = index + i;
             }
+            else value = scriptArgs.slice(i + 1);
+            value = value.join(" ");
         }
 
         if (!value || value.trim() === "") continue;
