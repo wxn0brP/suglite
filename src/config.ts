@@ -66,12 +66,15 @@ function ifFlag(flag: string) {
 if (ifFlag("h") || (scriptArgs.length >= 1 && scriptArgs[0] === "--help")) {
     log(COLORS.green, "Usage: suglite [options] [command] [args...]");
     log(COLORS.yellow, "Options:");
+    log(COLORS.yellow, "", "Meta options:");
     log(COLORS.yellow, "", "  -h            \t Show this help message");
     log(COLORS.yellow, "", "  -v            \t Show version number");
+    log(COLORS.yellow, "", "CLI Configuration options:");
     log(COLORS.yellow, "", "  -p <name>     \t Use predefined configuration");
     log(COLORS.yellow, "", "  -c <cmd>      \t Use custom command");
-    log(COLORS.yellow, "", "  -mc [name]    \t Make configuration (name for predefined configs)");
     log(COLORS.yellow, "", "  --any=value   \t Set any configuration value");
+    log(COLORS.yellow, "", "File Configuration options:");
+    log(COLORS.yellow, "", "  -mc [name]    \t Make configuration (name for predefined configs)");
     log(COLORS.yellow, "", "  -mgc          \t Make global configuration");
     process.exit(0);
 }
@@ -143,6 +146,7 @@ if (ifFlag("c")) {
 for (const arg of scriptArgs) {
     if (arg.startsWith("--")) {
         let [key, value] = arg.slice(2).split("=");
+        if (!key || key.trim() === "") continue;
         if (
             (value.startsWith("{") && value.endsWith("}")) ||
             (value.startsWith("[") && value.endsWith("]"))
