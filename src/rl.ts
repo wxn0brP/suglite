@@ -19,11 +19,18 @@ function appendHistory(input: string) {
     appendFileSync(".suglite_history", input + "\n");
 }
 
+function uniqueHistory(history?: string[]) {
+    if (!history) history = readHistory();
+    history = [...new Set(history)];
+    writeFileSync(".suglite_history", history.join("\n"));
+    return history;
+}
+
 const rlOpts: Readline.ReadLineOptions = {
     input: process.stdin,
     output: process.stdout,
     historySize: config.history,
-    history: readHistory(),
+    history: uniqueHistory(),
 }
 
 // Handle terminal input events
@@ -49,13 +56,23 @@ rl.on("line", (input) => {
             startProcess();
             break;
         case "quit":
+        case "exit":
             log(COLORS.green, "Shutting down...");
             process.exit(0);
         case "help":
-            log(COLORS.green, "Available commands:");
-            for (const [key, value] of Object.entries(config.events)) {
-                log(COLORS.green, "", `${key} -> ${value}`);
-            }
+            log(COLORS.green, "Commands:");
+            log(COLORS.green, "", "<event> -> Run event command (see 'show-cmd')");
+            log(COLORS.green, "", "!<event> -> Run event command without pretty logging");
+            log(COLORS.green, "", "$<command> -> Run shell command");
+            log(COLORS.green, "", "$!<command> -> Run shell command with pretty logging");
+            log(COLORS.green, "System commands:");
+            log(COLORS.green, "", "rs -> Restart process");
+            log(COLORS.green, "", "quit/exit -> Exit");
+            log(COLORS.green, "", "help -> Show help");
+            log(COLORS.green, "", "config -> Show current config");
+            log(COLORS.green, "", "cls -> Clear console");
+            log(COLORS.green, "", "unique-history -> Make history unique");
+            log(COLORS.green, "", "show-cmd -> Show available custom commands");
             break;
         case "config":
             log(COLORS.green, "Current config:");
@@ -63,6 +80,15 @@ rl.on("line", (input) => {
             break;
         case "cls":
             console.clear();
+            break;
+        case "unique-history":
+            uniqueHistory();
+            break;
+        case "show-cmd":
+            log(COLORS.green, "Available custom commands:");
+            for (const [key, value] of Object.entries(config.events)) {
+                log(COLORS.green, "", `${key} -> ${value}`);
+            }
             break;
     }
 });
