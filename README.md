@@ -21,7 +21,7 @@ suglite
 
 Run with a custom command:  
 ```sh
-suglite -c "node server.js"
+suglite -c node server.js
 ```
 
 Use a predefined configuration:  
@@ -31,7 +31,11 @@ suglite -p ts
 
 Set a configuration value:  
 ```sh
-suglite --cmd="node server.js" --watch="src"
+suglite --cmd node server.js --watch src
+```
+Or
+```sh
+suglite -c node server.js -w src
 ```
 
 See `suglite --help` for more options.
