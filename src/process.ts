@@ -12,7 +12,7 @@ export function startProcess() {
 
     restartTimeout = setTimeout(async () => {
         await restartProcess();
-    }, 100);
+    }, 250);
 }
 
 // Function to start/restart the process
