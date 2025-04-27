@@ -56,7 +56,6 @@ export function noConfigArgs(data: CliNoConfigArgsData) {
         const flag = firstArg.slice(1);
         if (noConfigFlags[flag]) noConfigFlags[flag](data);
     }
-
 }
 
 function showHelp() {
@@ -68,8 +67,8 @@ function showHelp() {
     console.log("CLI Configuration options:");
     console.log("  -p <name>     \t Use predefined configuration");
     console.log("  -c <cmd>      \t Use custom command");
-    console.log("  -w <list>     \t Watch list of files");
-    console.log("  --any=value   \t Set any configuration value");
+    console.log("  -w <list>     \t Watch list of files (json or string for one file/dir)");
+    console.log("  --any value   \t Set any configuration value");
     console.log();
     console.log("File Configuration options:");
     console.log("  -mc [name]    \t Make configuration (name for predefined configs)");

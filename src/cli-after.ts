@@ -23,6 +23,18 @@ const cliConfigFlags: { [key: string]: (data: CliArgsData) => void } = {
 
 const cliAliases: { [key: string]: string } = {
     w: "watch",
+    c: "cmd"
+}
+
+function parseValue(value: string): any {
+    if (
+        (value.startsWith("{") && value.endsWith("}")) ||
+        (value.startsWith("[") && value.endsWith("]"))
+    ) return JSON.parse(value);
+    else if (!isNaN(Number(value))) return Number(value);
+    else if (value === "true") return true;
+    else if (value === "false") return false;
+    return value;
 }
 
 export function handleCliArgs(data: CliArgsData) {
@@ -37,48 +49,29 @@ export function handleCliArgs(data: CliArgsData) {
 
     data.config = loadConfig(config);
 
-    if (scriptArgs.length >= 2 && scriptArgs[0] === "-c") {
-        const isOnlyC = scriptArgs.map(arg => arg.includes("--")).filter(Boolean).length === 0;
-        if (isOnlyC) {
-            config.cmd = scriptArgs.slice(1).join(" ");
-        } else {
-            const index = scriptArgs.findIndex(arg => arg.includes("--"));
-            config.cmd = scriptArgs.slice(1, index).join(" ");
-        }
-    }
+    let temp = "";
 
     for (let i = 0; i < scriptArgs.length; i++) {
         const arg = scriptArgs[i];
+
+        if (arg.startsWith("-")) {
+            for (let j = i + 1; j < scriptArgs.length; j++) {
+                const nextArg = scriptArgs[j];
+                if (nextArg.startsWith("-")) break;
+                i = j;
+                temp += nextArg + " ";
+            }
+        }
+
+        const value = parseValue(temp.trim());
+        temp = "";
+
         let key: string;
 
         if (arg.startsWith("--")) key = arg.slice(2);
         else if (arg.startsWith("-") && cliAliases[arg.slice(1)]) key = cliAliases[arg.slice(1)];
 
         if (!key) continue;
-        let value: any;
-
-        // --any=value
-        if (arg.includes("=")) [key, value] = arg.slice(2).split("=");
-        else {
-            // --any value value
-            const index = scriptArgs.slice(i + 1).findIndex(arg => arg.startsWith("--"));
-            if (index !== -1) {
-                value = scriptArgs.slice(i, index);
-                i = index + i;
-            }
-            else value = scriptArgs.slice(i + 1);
-            value = value.join(" ");
-        }
-
-        if (!value || value.trim() === "") continue;
-
-        if (
-            (value.startsWith("{") && value.endsWith("}")) ||
-            (value.startsWith("[") && value.endsWith("]"))
-        ) value = JSON.parse(value);
-        else if (!isNaN(Number(value))) value = Number(value);
-        else if (value === "true") value = true;
-        else if (value === "false") value = false;
 
         config[key] = value;
     }

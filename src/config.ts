@@ -80,6 +80,11 @@ config = handleCliArgs({
     preConfigsList,
 });
 
+// -w dist -> -w ["dist"]
+if (typeof config.watch === "string") {
+    config.watch = [config.watch];
+}
+
 // If no custom command, check `package.json`
 if (!config.cmd && fs.existsSync(packagePath)) {
     const pkg = JSON.parse(fs.readFileSync(packagePath, "utf8"));
