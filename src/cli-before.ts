@@ -68,6 +68,7 @@ function showHelp() {
     console.log("  -p <name>     \t Use predefined configuration");
     console.log("  -c <cmd>      \t Use custom command");
     console.log("  -w <list>     \t Watch list of files (json or string for one file/dir)");
+    console.log("  -d <time>     \t Delay before restarting (in ms) (e.g. wait for build to finish)");
     console.log("  --any value   \t Set any configuration value");
     console.log();
     console.log("File Configuration options:");

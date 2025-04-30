@@ -50,6 +50,7 @@ Create a `suglite.json` file in your project directory eg:
   "ignore": ["node_modules"],
   "restart_cmd": "clear",
   "history": 100,
+  "delay": 0,
   "events": {
     "clean": "rm -rf dist"
   }

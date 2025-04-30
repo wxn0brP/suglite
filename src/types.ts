@@ -6,6 +6,7 @@ export interface SugliteConfig {
     restart_cmd?: string;
     events?: Record<string, string>;
     history?: number;
+    delay?: number;
 }
 
 export interface CliNoConfigArgsData {

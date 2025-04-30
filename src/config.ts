@@ -15,6 +15,7 @@ export let config: SugliteConfig = {
     restart_cmd: "",
     events: {},
     history: 100,
+    delay: 0,
 };
 
 // Determine if executed with `node suglite.js` or as `./suglite`

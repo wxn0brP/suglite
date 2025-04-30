@@ -18,6 +18,7 @@ export function startProcess() {
 // Function to start/restart the process
 async function restartProcess() {
     if (proc) await stopProcess();
+    if (config.delay) await new Promise((resolve) => setTimeout(resolve, config.delay));
 
     if (config.restart_cmd) {
         exec(config.restart_cmd, (err, stdout) => {

@@ -23,7 +23,8 @@ const cliConfigFlags: { [key: string]: (data: CliArgsData) => void } = {
 
 const cliAliases: { [key: string]: string } = {
     w: "watch",
-    c: "cmd"
+    c: "cmd",
+    d: "delay",
 }
 
 function parseValue(value: string): any {
