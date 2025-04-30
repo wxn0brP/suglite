@@ -12,7 +12,7 @@ export function startProcess() {
 
     restartTimeout = setTimeout(async () => {
         await restartProcess();
-    }, 250);
+    }, 250 + config.delay);
 }
 
 // Function to start/restart the process
