@@ -33,6 +33,10 @@ const rlOpts: Readline.ReadLineOptions = {
     history: uniqueHistory(),
 }
 
+const standardCommands = [
+    "yarn", "npm", "pnpm", "node", "bun", 
+];
+
 // Handle terminal input events
 const rl = Readline.createInterface(rlOpts);
 rl.on("line", (input) => {
@@ -48,6 +52,11 @@ rl.on("line", (input) => {
     if (cmdTrim.startsWith("$")) {
         const noLog = cmdTrim.startsWith("$!");
         runCustomCommand(cmdTrim.slice(noLog ? 2 : 1), noLog);
+        if (config.history && config.history > 0) appendHistory(cmdTrim);
+    }
+
+    if (standardCommands.includes(cmdTrim.split(" ")[0].toLowerCase())) {
+        runCustomCommand(cmdTrim, false);
         if (config.history && config.history > 0) appendHistory(cmdTrim);
     }
 
