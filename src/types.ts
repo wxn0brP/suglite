@@ -22,6 +22,7 @@ export interface CliNoConfigArgsData {
 export interface CliArgsData {
     scriptArgs: string[];
     config: SugliteConfig;
-    loadConfig: (config: SugliteConfig) => SugliteConfig;
+    loadConfig: (config: SugliteConfig, file?: string) => SugliteConfig;
     preConfigsList: string[];
+    file: string;
 }

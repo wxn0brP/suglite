@@ -22,7 +22,6 @@ export let config: SugliteConfig = {
 const isDirectExec = process.argv[0].includes("node");
 
 // Paths to configuration files
-const configPath = "suglite.json";
 const packagePath = "package.json";
 
 // Paths to global configuration
@@ -44,7 +43,7 @@ noConfigArgs({
     isDirectExec,
     preConfigsList,
     config,
-    configPath,
+    configPath: "suglite.json",
     globalConfigPath,
     globalConfigDir
 });
@@ -63,7 +62,7 @@ const doubleDashIndex = rawArgs.indexOf("--");
 const scriptArgs = doubleDashIndex !== -1 ? rawArgs.slice(0, doubleDashIndex) : rawArgs;
 const cmdArgs = doubleDashIndex !== -1 ? rawArgs.slice(doubleDashIndex + 1) : [];
 
-function loadConfig(config: SugliteConfig) {
+function loadConfig(config: SugliteConfig, configPath = "suglite.json"): SugliteConfig {
     // Load `suglite.json` if exists
     if (fs.existsSync(configPath)) {
         const localConfig = JSON.parse(fs.readFileSync(configPath, "utf8"));
@@ -79,6 +78,7 @@ config = handleCliArgs({
     config,
     loadConfig,
     preConfigsList,
+    file: "suglite.json"
 });
 
 // -w dist -> -w ["dist"]

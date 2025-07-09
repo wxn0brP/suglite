@@ -19,6 +19,10 @@ const cliConfigFlags: { [key: string]: (data: CliArgsData) => void } = {
             data.config = deepMerge(config, preConfigData);
         }
     },
+    f: (data) => {
+        const filePath = data.scriptArgs[1];
+        data.file = filePath;
+    },
 }
 
 const cliAliases: { [key: string]: string } = {
@@ -48,7 +52,7 @@ export function handleCliArgs(data: CliArgsData) {
         }
     }
 
-    data.config = loadConfig(config);
+    data.config = loadConfig(config, data.file);
 
     let temp = "";
 
