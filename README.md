@@ -24,42 +24,12 @@ Run with a custom command:
 suglite -c node server.js
 ```
 
-Use a predefined configuration:  
+Use a predefined configuration: (e.g. for python)
 ```sh
-suglite -p ts
-```
-
-Set a configuration value:  
-```sh
-suglite --cmd node server.js --watch src
-```
-Or
-```sh
-suglite -c node server.js -w src
+suglite -p py
 ```
 
 See `suglite --help` for more options.
-
-## Configuration  
-
-Create a `suglite.json` file in your project directory eg:  
-```json
-{
-  "cmd": "npm start",
-  "watch": ["src"],
-  "ignore": ["node_modules"],
-  "restart_cmd": "clear",
-  "history": 100,
-  "delay": 0,
-  "events": {
-    "clean": "rm -rf dist"
-  }
-}
-```
-or run
-```sh
-suglite -mc
-```
 
 ## Interactive Commands  
 

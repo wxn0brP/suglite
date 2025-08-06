@@ -1,4 +1,5 @@
 export interface SugliteConfig {
+    ref?: string;
     cmd?: string;
     args?: string[];
     watch?: string[];
@@ -8,22 +9,4 @@ export interface SugliteConfig {
     history?: number;
     delay?: number;
     trustedShells?: string[];
-}
-
-export interface CliNoConfigArgsData {
-    isDirectExec: boolean;
-    processArgs: string[];
-    config: SugliteConfig;
-    preConfigsList: string[];
-    configPath: string;
-    globalConfigPath: string;
-    globalConfigDir: string;
-}
-
-export interface CliArgsData {
-    scriptArgs: string[];
-    config: SugliteConfig;
-    loadConfig: (config: SugliteConfig, file?: string) => SugliteConfig;
-    preConfigsList: string[];
-    file: string;
 }

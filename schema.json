@@ -3,49 +3,63 @@
     "title": "SugliteConfig",
     "type": "object",
     "properties": {
+        "ref": {
+            "type": "string",
+            "$comment": "Reference config to other config (extend)"
+        },
         "cmd": {
-            "type": "string"
+            "type": "string",
+            "$comment": "Command to execute"
         },
         "args": {
             "type": "array",
             "items": {
                 "type": "string"
-            }
+            },
+            "$comment": "Command arguments added to the end of the command"
         },
         "watch": {
             "type": "array",
             "items": {
                 "type": "string"
-            }
+            },
+            "$comment": "List/directory of files to watch"
         },
         "ignore": {
             "type": "array",
             "items": {
                 "type": "string"
-            }
+            },
+            "$comment": "List/directory of files to ignore"
         },
         "restart_cmd": {
-            "type": "string"
+            "type": "string",
+            "$comment": "Command executed before restarting process"
         },
         "events": {
             "type": "object",
             "additionalProperties": {
                 "type": "string"
-            }
+            },
+            "$comment": "Custom commands available in runtime"
         },
         "history": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "$comment": "0 = disabled"
         },
         "delay": {
             "type": "number",
-            "minimum": 0
+            "minimum": 0,
+            "$comment": "debounce delay in seconds"
         },
         "trustedShells": {
             "type": "array",
             "items": {
                 "type": "string"
-            }
+            },
+            "$comment": "List of trusted shells (don't require $ prefix)",
+            "uniqueItems": true
         }
     },
     "additionalProperties": false

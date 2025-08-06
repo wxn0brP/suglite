@@ -7,4 +7,4 @@ await import("./rl");
 
 startProcess();
 
-export {};
+export { };

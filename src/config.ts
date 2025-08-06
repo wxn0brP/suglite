@@ -1,12 +1,15 @@
-import fs from "fs";
+import { existsSync, writeFileSync } from "fs";
 import { homedir } from "os";
-import { handleCliArgs } from "./cli-after";
-import { noConfigArgs } from "./cli-before";
+import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
+import { getSuglitePath, loadJson, loadPredefinedConfig } from "./config.utils";
+import { groupArguments } from "./groupArgs";
 import { COLORS, log } from "./logger";
 import { SugliteConfig } from "./types";
 import { deepMerge } from "./utils";
 
-// Default configuration
+const { version } = loadJson(getSuglitePath() + "package.json");
+
 export let config: SugliteConfig = {
     cmd: "",
     args: [],
@@ -16,16 +19,9 @@ export let config: SugliteConfig = {
     events: {},
     history: 100,
     delay: 0,
-    trustedShells: [],
-};
+    trustedShells: []
+}
 
-// Determine if executed with `node suglite.js` or as `./suglite`
-const isDirectExec = process.argv[0].includes("node");
-
-// Paths to configuration files
-const packagePath = "package.json";
-
-// Paths to global configuration
 const globalConfigDir = (
     process.platform === "win32" ?
         process.env.APPDATA || "" :
@@ -33,76 +29,168 @@ const globalConfigDir = (
 ) + "/suglite";
 const globalConfigPath = globalConfigDir + "/config.json";
 
-// Predefined configurations
-export const preConfigsList =
-    fs.readdirSync(import.meta.dirname + "/../config")
-        .map((file) => file.replace(".json", ""));
+const rawArgs = groupArguments(process.argv);
+const argv = await yargs(hideBin(rawArgs))
+    .scriptName("suglite")
+    .version(version)
 
+    // suglite config
+    .option("ref", {
+        type: "string",
+        description: "Reference config to other config (extend)",
+    })
+    .option("cmd", {
+        alias: "c",
+        type: "string",
+        description: "Command to run",
+    })
+    .option("args", {
+        alias: "a",
+        type: "array",
+        description: "Command arguments",
+    })
+    .option("watch", {
+        alias: "w",
+        type: "array",
+        description: "Watch directories",
+    })
+    .option("ignore", {
+        alias: "i",
+        type: "array",
+        description: "Ignore directories",
+    })
+    .option("restart-cmd", {
+        alias: "r",
+        type: "string",
+        description: "Command to run on restart",
+    })
+    .option("history", {
+        alias: "y",
+        type: "number",
+        description: "History size",
+    })
+    .option("delay", {
+        alias: "d",
+        type: "number",
+        description: "Delay before restarting",
+    })
+    .option("trusted-shells", {
+        alias: "t",
+        type: "array",
+        description: "Trusted shells",
+    })
 
-noConfigArgs({
-    processArgs: [],
-    isDirectExec,
-    preConfigsList,
-    config,
-    configPath: "suglite.json",
-    globalConfigPath,
-    globalConfigDir
-});
+    // runtime config
+    .option("p", {
+        type: "string",
+        description: "Use predefined config",
+    })
 
-// Load global configuration
-if (fs.existsSync(globalConfigPath)) {
-    const globalConfig = JSON.parse(fs.readFileSync(globalConfigPath, "utf8"));
-    config = deepMerge(config, globalConfig);
-    log(COLORS.cyan, "Global configuration loaded from: " + globalConfigPath);
+    .option("file", {
+        alias: "f",
+        type: "string",
+        description: "Config file",
+        default: "suglite.json",
+    })
+
+    // make config
+    .command("mc [name]", "Make config", (yargs) => yargs
+        .positional("name", { type: "string", description: "Predefined config reference name" }),
+        (arg) => {
+            const file = arg.file ? arg.file : "suglite.json";
+            if (existsSync(file)) {
+                log(COLORS.red, file + " already exists");
+                process.exit(1);
+            }
+            if (arg.name) {
+                config = deepMerge(config, loadPredefinedConfig(arg.name));
+                log(COLORS.yellow, `Using predefined config: ${arg.name}`);
+            }
+            writeFileSync(file, JSON.stringify(config, null, 4));
+            log(COLORS.green, file + " created");
+            process.exit(0);
+        })
+
+    .command("mgc", "Make global config", () => {
+        if (existsSync(globalConfigPath)) {
+            log(COLORS.red, globalConfigPath + " already exists");
+            process.exit(1);
+        }
+        writeFileSync(globalConfigPath, JSON.stringify(config, null, 4));
+        log(COLORS.green, globalConfigPath + " created");
+        process.exit(0);
+    })
+
+    .help()
+    .alias("h", "help")
+    .alias("v", "version")
+    .strict()
+    .parse();
+
+const globalConfig = existsSync(globalConfigPath) ? loadJson(globalConfigPath) : {};
+config = deepMerge(config, globalConfig);
+log(COLORS.cyan, "Global configuration loaded from: " + globalConfigPath);
+
+if (argv.p) {
+    config = deepMerge(config, loadPredefinedConfig(argv.p));
+    log(COLORS.yellow, `Using predefined config: ${argv.p}`);
 }
 
-// Parse arguments
-const rawArgs = process.argv.slice(isDirectExec ? 2 : 1);
-const doubleDashIndex = rawArgs.indexOf("--");
+if (existsSync(argv.file)) {
+    const localConfig = loadJson(argv.file) as Partial<SugliteConfig>;
 
-const scriptArgs = doubleDashIndex !== -1 ? rawArgs.slice(0, doubleDashIndex) : rawArgs;
-const cmdArgs = doubleDashIndex !== -1 ? rawArgs.slice(doubleDashIndex + 1) : [];
+    if (localConfig.ref) {
+        let refConfig = {};
+        if (existsSync(localConfig.ref)) {
+            refConfig = loadJson(localConfig.ref);
+        } else {
+            refConfig = loadPredefinedConfig(localConfig.ref);
+        }
 
-function loadConfig(config: SugliteConfig, configPath = "suglite.json"): SugliteConfig {
-    // Load `suglite.json` if exists
-    if (fs.existsSync(configPath)) {
-        const localConfig = JSON.parse(fs.readFileSync(configPath, "utf8"));
-        return deepMerge(config, localConfig);
+        config = deepMerge(config, refConfig);
+        log(COLORS.cyan, `Using referenced config: ${localConfig.ref}`);
     }
 
-    return config;
+    config = deepMerge(config, localConfig);
+    log(COLORS.cyan, "Local configuration loaded from: " + argv.file);
 }
 
-// Handle CLI arguments and `suglite.json`
-config = handleCliArgs({
-    scriptArgs,
-    config,
-    loadConfig,
-    preConfigsList,
-    file: "suglite.json"
-});
+if (argv.cmd) config.cmd = argv.cmd;
+if (argv.args) config.args = argv.args as string[];
+if (argv.watch) config.watch = argv.watch as string[];
+if (argv.ignore) config.ignore = argv.ignore as string[];
+if (argv.restart_cmd) config.restart_cmd = argv.restartCmd;
+if (argv.history) config.history = argv.history;
+if (argv.delay) config.delay = argv.delay;
+if (argv.trustedShells) config.trustedShells = argv.trustedShells as string[];
 
-// -w dist -> -w ["dist"]
-if (typeof config.watch === "string") {
-    config.watch = [config.watch];
-}
+// @ts-ignore
+if (typeof config.watch === "string") config.watch = [config.watch];
+// @ts-ignore
+if (typeof config.ignore === "string") config.ignore = [config.ignore];
 
-// If no custom command, check `package.json`
-if (!config.cmd && fs.existsSync(packagePath)) {
-    const pkg = JSON.parse(fs.readFileSync(packagePath, "utf8"));
-    if (pkg.main) {
-        config.cmd = "node";
-        config.args = [pkg.main];
+if (!config.cmd && existsSync("package.json")) {
+    const pkg = loadJson("package.json");
+
+    if (pkg?.scripts?.start) {
+        config.cmd = pkg.scripts.start;
+    } else if (pkg?.main) {
+        config.cmd = "node " + pkg.main;
     }
 }
 
-// If still no `cmd`, exit with error
 if (!config.cmd) {
     log(COLORS.red, "No `cmd` found in config or `package.json`. Exiting.");
     process.exit(1);
 }
 
-export const processedCmd =
+const dash = rawArgs.indexOf("--");
+const cmdArgs = dash !== -1 ? rawArgs.slice(dash + 1) : [];
+export let processedCmd =
     config.cmd +
     (config.args?.length > 0 ? " " + config.args.join(" ") : "") +
     (cmdArgs.length > 0 ? " " + cmdArgs.join(" ") : "");
+
+if ((processedCmd.startsWith(`"`) && processedCmd.endsWith(`"`)) || (processedCmd.startsWith(`'`) && processedCmd.endsWith(`'`))) {
+    processedCmd = processedCmd.slice(1, -1);
+}
