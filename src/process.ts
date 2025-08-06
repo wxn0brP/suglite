@@ -32,7 +32,6 @@ async function restartProcess() {
     proc = spawn(processedCmd, {
         stdio: "inherit",
         shell: true,
-        detached: true,
     });
 
     const pid = proc.pid;
