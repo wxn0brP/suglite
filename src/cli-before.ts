@@ -30,7 +30,7 @@ const noConfigFlags: { [key: string]: (data?: CliNoConfigArgsData) => void } = {
         log(COLORS.green, "Configuration made.");
         process.exit(0);
     },
-    
+
     mgc: (data) => {
         const { config, globalConfigDir, globalConfigPath } = data;
         if (fs.existsSync(globalConfigPath)) {
@@ -54,6 +54,7 @@ export function noConfigArgs(data: CliNoConfigArgsData) {
 
     if (firstArg.startsWith("-")) {
         const flag = firstArg.slice(1);
+        data.processArgs = processArgs;
         if (noConfigFlags[flag]) noConfigFlags[flag](data);
     }
 }
