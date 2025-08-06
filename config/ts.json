@@ -1,7 +1,8 @@
 {
     "cmd": "yarn build",
-    "args": [],
-    "watch": ["src"],
+    "watch": [
+        "src"
+    ],
     "restart_cmd": "clear",
     "events": {
         "clean": "rm -rf dist"

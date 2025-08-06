@@ -40,6 +40,12 @@
         "delay": {
             "type": "number",
             "minimum": 0
+        },
+        "trustedShells": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
         }
     },
     "additionalProperties": false

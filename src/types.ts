@@ -7,6 +7,7 @@ export interface SugliteConfig {
     events?: Record<string, string>;
     history?: number;
     delay?: number;
+    trustedShells?: string[];
 }
 
 export interface CliNoConfigArgsData {

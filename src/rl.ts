@@ -8,7 +8,7 @@ import { appendFileSync, existsSync, readFileSync, writeFileSync } from "fs";
 export const customCommandsProcess = new Map<string, ChildProcess>();
 
 if (config.history && config.history > 0) {
-    if(!existsSync(".suglite_history")) writeFileSync(".suglite_history", "");
+    if (!existsSync(".suglite_history")) writeFileSync(".suglite_history", "");
 }
 
 function readHistory() {
@@ -33,15 +33,26 @@ const rlOpts: Readline.ReadLineOptions = {
     history: uniqueHistory(),
 }
 
-const standardCommands = [
-    "yarn", "npm", "pnpm", "node", "bun", 
+const trustedShells = [
+    // TS/JS
+    "yarn", "npm", "pnpm", "node", "bun", "tsc",
+    // Bash
+    "git",
+    // Docker
+    "docker", "docker-compose",
+    // Python
+    "python", "pip",
+    // Rust
+    "cargo",
+    // Go
+    "go",
 ];
 
 // Handle terminal input events
 const rl = Readline.createInterface(rlOpts);
 rl.on("line", (input) => {
     const cmdTrim = input.trim();
-    
+
     const isNoLog = cmdTrim.startsWith("!");
     const eventKey = isNoLog ? cmdTrim.slice(1) : cmdTrim;
     const cmdEvents = config.events[eventKey];
@@ -55,7 +66,7 @@ rl.on("line", (input) => {
         if (config.history && config.history > 0) appendHistory(cmdTrim);
     }
 
-    if (standardCommands.includes(cmdTrim.split(" ")[0].toLowerCase())) {
+    if ([trustedShells, ...config.trustedShells].includes(cmdTrim.split(" ")[0].toLowerCase())) {
         runCustomCommand(cmdTrim, false);
         if (config.history && config.history > 0) appendHistory(cmdTrim);
     }
@@ -103,9 +114,9 @@ rl.on("line", (input) => {
 });
 
 function logExit(code: number) {
-    if (code === 0 || code === null) 
+    if (code === 0 || code === null)
         log(COLORS.cyan, "Majestic exit from custom command.");
-    else 
+    else
         log(COLORS.magenta, `Custom command crashed with exit code ${code}.`);
 }
 
@@ -117,7 +128,7 @@ function runCustomCommand(command: string, prettyLog: boolean = true) {
         shell: true,
     }
     if (!prettyLog) opts.stdio = "inherit";
-    
+
     const cmdProcess = spawn(command, opts);
     customCommandsProcess.set(cmdTrim, cmdProcess);
 

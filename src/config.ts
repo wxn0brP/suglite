@@ -16,6 +16,7 @@ export let config: SugliteConfig = {
     events: {},
     history: 100,
     delay: 0,
+    trustedShells: [],
 };
 
 // Determine if executed with `node suglite.js` or as `./suglite`

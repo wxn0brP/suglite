@@ -1,0 +1,14 @@
+{
+    "cmd": "go run src/main.go",
+    "watch": [
+        "src"
+    ],
+    "restart_cmd": "clear",
+    "events": {
+        "clean": "go clean",
+        "build": "go build",
+        "test": "go test",
+        "tidy": "go mod tidy",
+        "fmt": "go fmt"
+    }
+}
