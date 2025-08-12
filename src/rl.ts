@@ -66,7 +66,9 @@ rl.on("line", (input) => {
         if (config.history && config.history > 0) appendHistory(cmdTrim);
     }
 
-    if ([trustedShells, ...config.trustedShells].includes(cmdTrim.split(" ")[0].toLowerCase())) {
+    const mergedShells = [...trustedShells, ...config.trustedShells];
+    const firstWord = cmdTrim.split(" ")[0].toLowerCase();
+    if (mergedShells.includes(firstWord)) {
         runCustomCommand(cmdTrim, false);
         if (config.history && config.history > 0) appendHistory(cmdTrim);
     }
