@@ -1,3 +1,5 @@
+const commandTrigger = ["-c", "--cmd"];
+
 export function groupArguments(input: string[]): string[] {
     const result: string[] = [];
 
@@ -6,11 +8,11 @@ export function groupArguments(input: string[]): string[] {
 
     for (const token of input) {
         if (!hasCommand) {
-            if (token === "-c" || token === "--cmd") hasCommand = true;
+            if (commandTrigger.includes(token)) hasCommand = true;
             result.push(token);
         } else {
             if (token.startsWith("-")) {
-                result.push(`"` + command.trim() + `"`);
+                result.push(command.trim());
                 command = "";
                 hasCommand = false;
                 result.push(token);
@@ -19,6 +21,8 @@ export function groupArguments(input: string[]): string[] {
             command += " " + token;
         }
     }
+
+    if (command) result.push(command.trim());
 
     return result;
 }
