@@ -1,4 +1,4 @@
-import { existsSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { homedir } from "os";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
@@ -116,6 +116,7 @@ const argv = await yargs(hideBin(rawArgs))
             log(COLORS.red, globalConfigPath + " already exists");
             process.exit(1);
         }
+        if (!existsSync(globalConfigDir)) mkdirSync(globalConfigDir);
         writeFileSync(globalConfigPath, JSON.stringify(config, null, 4));
         log(COLORS.green, globalConfigPath + " created");
         process.exit(0);
