@@ -30,7 +30,7 @@ const globalConfigDir = (
 const globalConfigPath = globalConfigDir + "/config.json";
 
 const rawArgs = groupArguments(process.argv);
-const argv = await yargs(hideBin(rawArgs))
+export const argv = await yargs(hideBin(rawArgs))
     .scriptName("suglite")
     .version(version)
 
@@ -84,6 +84,11 @@ const argv = await yargs(hideBin(rawArgs))
     .option("p", {
         type: "string",
         description: "Use predefined config",
+    })
+
+    .option("run", {
+        type: "string",
+        description: "Run command once and exit",
     })
 
     .option("file", {
