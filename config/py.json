@@ -1,0 +1,7 @@
+{
+    "cmd": "python src/main.py",
+    "watch": [
+        "src"
+    ],
+    "restart_cmd": "clear"
+}
