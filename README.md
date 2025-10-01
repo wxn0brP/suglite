@@ -7,7 +7,11 @@
 Run the following command:  
 
 ```sh
-yarn global add github:wxn0brP/suglite#dist
+yarn global add github:wxn0brP/suglite
+```
+OR
+```sh
+bun add -g github:wxn0brP/suglite
 ```
 
 This downloads the `suglite` script and makes it executable.  

@@ -1,22 +1,20 @@
 {
 	"name": "suglite",
-	"version": "0.1.5",
-	"main": "dist/index.js",
+	"version": "0.2.0",
+	"main": "src/index.ts",
 	"author": "wxn0brP",
 	"license": "MIT",
 	"type": "module",
 	"bin": {
-		"suglite": "./dist/index.js"
+		"suglite": "./bun/index.ts"
 	},
 	"scripts": {
-		"build": "tsc && tsc-alias",
-		"start": "node dist/index.js"
+		"start": "bun run bun/index.ts"
 	},
 	"devDependencies": {
-		"@types/node": "*",
+		"@types/bun": "*",
 		"@types/yargs": "^17.0.33",
-		"tsc-alias": "^1.8.10",
-		"typescript": "^5.7.3"
+		"typescript": "*"
 	},
 	"dependencies": {
 		"chokidar": "^4.0.3",
