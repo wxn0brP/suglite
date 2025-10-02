@@ -6,10 +6,10 @@
 	"license": "MIT",
 	"type": "module",
 	"bin": {
-		"suglite": "./bun/index.ts"
+		"suglite": "./src/index.ts"
 	},
 	"scripts": {
-		"start": "bun run bun/index.ts"
+		"start": "bun run src/index.ts"
 	},
 	"devDependencies": {
 		"@types/bun": "*",
@@ -21,7 +21,7 @@
 		"yargs": "^18.0.0"
 	},
 	"files": [
-		"dist/**/*",
+		"src/**/*",
 		"config/**/*",
 		"package.json"
 	]
