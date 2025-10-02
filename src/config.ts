@@ -127,6 +127,12 @@ export const argv = await yargs(hideBin(rawArgs))
         process.exit(0);
     })
 
+    .command("id", "display instance info", () => {
+        log(COLORS.cyan, "Dir: ", import.meta.dirname.split("/").slice(0, -1).join("/"));
+        log(COLORS.cyan, "Version: ", version);
+        process.exit(0);
+    })
+
     .help()
     .alias("h", "help")
     .alias("v", "version")
