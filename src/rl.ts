@@ -36,6 +36,8 @@ const rlOpts: Readline.ReadLineOptions = {
 const trustedShells = [
     // TS/JS
     "yarn", "npm", "pnpm", "node", "bun", "tsc",
+    // My tools
+    "bumr",
     // Bash
     "git",
     // Docker
