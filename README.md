@@ -7,6 +7,10 @@
 Run the following command:  
 
 ```sh
+ingr suglite
+```
+OR
+```sh
 yarn global add github:wxn0brP/suglite
 ```
 OR
