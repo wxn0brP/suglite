@@ -52,7 +52,9 @@ const trustedShells = [
 
 // Handle terminal input events
 const rl = Readline.createInterface(rlOpts);
-rl.on("line", (input) => {
+rl.on("line", handleLine);
+
+export function handleLine(input: string) {
     const cmdTrim = input.trim();
 
     const isNoLog = cmdTrim.startsWith("!");
@@ -97,6 +99,12 @@ rl.on("line", (input) => {
             log(COLORS.green, "", "cls -> Clear console");
             log(COLORS.green, "", "unique-history -> Make history unique");
             log(COLORS.green, "", "show-cmd -> Show available custom commands");
+            log(COLORS.green, "", "server [port] -> Start server");
+            log(COLORS.green, "", "server stop -> Stop server");
+            log(COLORS.green, "Trusted shells:");
+            for (const shell of trustedShells) {
+                log(COLORS.green, "", shell);
+            }
             break;
         case "config":
             log(COLORS.green, "Current config:");
@@ -115,7 +123,30 @@ rl.on("line", (input) => {
             }
             break;
     }
-});
+
+    if (cmdTrim.startsWith("server")) {
+        const exists = [...customCommandsProcess.keys()].filter(key => key.startsWith("server")).length > 0;
+        const stop = cmdTrim.includes("stop");
+        if (stop) {
+            if (!exists) {
+                log(COLORS.red, "Server not running");
+                return;
+            }
+            log(COLORS.green, "Stopping server...");
+            killHard(customCommandsProcess.get("server").pid);
+            customCommandsProcess.delete("server");
+            return;
+        }
+
+        if (exists) {
+            log(COLORS.red, "Server already running");
+            return;
+        }
+
+        log(COLORS.green, "Starting server...");
+        runCustomCommand(cmdTrim, false);
+    }
+}
 
 function logExit(code: number) {
     if (code === 0 || code === null)

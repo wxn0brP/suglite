@@ -1,18 +1,22 @@
 import { exec, spawn, ChildProcess, execSync } from "child_process";
 import { COLORS, log } from "./logger";
 import { config, processedCmd } from "./config";
-import { customCommandsProcess } from "./rl";
+import { customCommandsProcess, handleLine } from "./rl";
 
 export let proc: ChildProcess | null = null;
 let restartTimeout: NodeJS.Timeout | null = null;
 
 // Debounce restart
-export function startProcess() {
+export async function startProcess() {
     if (restartTimeout) clearTimeout(restartTimeout);
 
     restartTimeout = setTimeout(async () => {
         await restartProcess();
     }, 250 + config.delay);
+
+    setTimeout(() => {
+        startupCommands();
+    }, 500 + config.delay);
 }
 
 // Function to start/restart the process
@@ -101,6 +105,12 @@ export function killHard(pid: number) {
     }
 }
 
+export function startupCommands() {
+    if (config.startup_cmd?.length) config.startup_cmd.forEach(handleLine);
+    if (typeof config.server !== "undefined" && typeof config.server !== "boolean" && !isNaN(+config.server)) {
+        handleLine(`server ${config.server}`);
+    }
+}
 
 process.on("exit", () => stopProcess());
 async function exitEvent() {

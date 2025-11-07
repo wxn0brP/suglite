@@ -60,6 +60,18 @@
             },
             "$comment": "List of trusted shells (don't require $ prefix)",
             "uniqueItems": true
+        },
+        "server": {
+            "type": "integer",
+            "minimum": 0,
+            "$comment": "0 = disabled"
+        },
+        "startup_cmd": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "$comment": "List of commands to execute on startup"
         }
     },
     "additionalProperties": false

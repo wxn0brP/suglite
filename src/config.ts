@@ -19,7 +19,9 @@ export let config: SugliteConfig = {
     events: {},
     history: 100,
     delay: 0,
-    trustedShells: []
+    trustedShells: [],
+    server: false,
+    startup_cmd: [],
 }
 
 const globalConfigDir = (
@@ -78,6 +80,11 @@ export const argv = await yargs(hideBin(rawArgs))
         alias: "t",
         type: "array",
         description: "Trusted shells",
+    })
+    .option("server", {
+        alias: "s",
+        type: "number",
+        description: "Port for server",
     })
 
     // runtime config
@@ -175,6 +182,7 @@ if (argv.restart_cmd) config.restart_cmd = argv.restartCmd;
 if (argv.history) config.history = argv.history;
 if (argv.delay) config.delay = argv.delay;
 if (argv.trustedShells) config.trustedShells = argv.trustedShells as string[];
+if (argv.server) config.server = argv.server;
 
 // @ts-ignore
 if (typeof config.watch === "string") config.watch = [config.watch];

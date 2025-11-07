@@ -9,4 +9,6 @@ export interface SugliteConfig {
     history?: number;
     delay?: number;
     trustedShells?: string[];
+    server?: false | number;
+    startup_cmd?: string[];
 }
