@@ -126,8 +126,7 @@ export function handleLine(input: string) {
 
     if (cmdTrim.startsWith("server")) {
         const exists = [...customCommandsProcess.keys()].filter(key => key.startsWith("server")).length > 0;
-        const stop = cmdTrim.includes("stop");
-        if (stop) {
+        if (cmdTrim.includes("stop")) {
             if (!exists) {
                 log(COLORS.red, "Server not running");
                 return;
@@ -135,6 +134,23 @@ export function handleLine(input: string) {
             log(COLORS.green, "Stopping server...");
             killHard(customCommandsProcess.get("server").pid);
             customCommandsProcess.delete("server");
+            return;
+        }
+
+        if (cmdTrim.includes("open")) {
+            if (!exists) {
+                log(COLORS.red, "Server not running");
+                return;
+            }
+            log(COLORS.green, "Opening server...");
+            const url = `http://localhost:${config.server}`;
+            if (process.platform === "win32") {
+                runCustomCommand(`start "" "${url}"`);
+            } else if (process.platform === "darwin") {
+                runCustomCommand(`open ${url}`);
+            } else {
+                runCustomCommand(`xdg-open ${url}`);
+            }
             return;
         }
 
