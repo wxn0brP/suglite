@@ -22,11 +22,12 @@ if (argv.run !== undefined) {
     });
 
 } else {
-    const { startProcess } = await import("./process");
+    const { startProcess, startupCommands } = await import("./process");
     await import("./watcher");
     await import("./rl");
 
     startProcess();
+    startupCommands();
 }
 
 export { };

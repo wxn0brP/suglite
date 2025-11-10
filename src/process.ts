@@ -13,10 +13,6 @@ export async function startProcess() {
     restartTimeout = setTimeout(async () => {
         await restartProcess();
     }, 250 + config.delay);
-
-    setTimeout(() => {
-        startupCommands();
-    }, 500 + config.delay);
 }
 
 // Function to start/restart the process
@@ -105,7 +101,8 @@ export function killHard(pid: number) {
     }
 }
 
-export function startupCommands() {
+export async function startupCommands() {
+    await new Promise((resolve) => setTimeout(resolve, config.delay + 500));
     if (config.startup_cmd?.length) config.startup_cmd.forEach(handleLine);
     if (typeof config.server !== "undefined" && typeof config.server !== "boolean" && !isNaN(+config.server)) {
         handleLine(`server ${config.server}`);
