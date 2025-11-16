@@ -66,6 +66,39 @@
             "minimum": 0,
             "$comment": "0 = disabled"
         },
+        "server_map": {
+            "type": "object",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "get": {
+                        "type": "object",
+                        "items": {
+                            "type": "string"
+                        },
+                        "$comment": "app.get(key, sendFile(value))",
+                        "uniqueItems": true
+                    },
+                    "dir": {
+                        "type": "object",
+                        "items": {
+                            "type": "string"
+                        },
+                        "$comment": "app.static(key, value)",
+                        "uniqueItems": true
+                    },
+                    "redirect": {
+                        "type": "object",
+                        "items": {
+                            "type": "string"
+                        },
+                        "$comment": "app.redirect(key, value)",
+                        "uniqueItems": true
+                    }
+                },
+                "$comment": "Server map"
+            }
+        },
         "startup_cmd": {
             "type": "array",
             "items": {

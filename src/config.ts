@@ -21,6 +21,11 @@ export let config: SugliteConfig = {
     delay: 0,
     trustedShells: [],
     server: false,
+    server_map: {
+        get: {},
+        dir: {},
+        redirect: {},
+    },
     startup_cmd: [],
 }
 

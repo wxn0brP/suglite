@@ -10,5 +10,10 @@ export interface SugliteConfig {
     delay?: number;
     trustedShells?: string[];
     server?: false | number;
+    server_map?: {
+        get?: Record<string, string>;
+        dir?: Record<string, string>;
+        redirect?: Record<string, string>;
+    }
     startup_cmd?: string[];
 }
