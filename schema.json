@@ -68,12 +68,12 @@
         },
         "server_map": {
             "type": "object",
-            "items": {
+            "additionalProperties": {
                 "type": "object",
                 "properties": {
                     "get": {
                         "type": "object",
-                        "items": {
+                        "additionalProperties": {
                             "type": "string"
                         },
                         "$comment": "app.get(key, sendFile(value))",
@@ -81,7 +81,7 @@
                     },
                     "dir": {
                         "type": "object",
-                        "items": {
+                        "additionalProperties": {
                             "type": "string"
                         },
                         "$comment": "app.static(key, value)",
@@ -89,15 +89,16 @@
                     },
                     "redirect": {
                         "type": "object",
-                        "items": {
+                        "additionalProperties": {
                             "type": "string"
                         },
                         "$comment": "app.redirect(key, value)",
                         "uniqueItems": true
                     }
                 },
-                "$comment": "Server map"
-            }
+                "additionalProperties": false
+            },
+            "$comment": "Server map"
         },
         "startup_cmd": {
             "type": "array",
