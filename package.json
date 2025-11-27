@@ -17,7 +17,7 @@
 		"typescript": "*"
 	},
 	"dependencies": {
-		"chokidar": "^4.0.3",
+		"chokidar": "^5.0.0",
 		"yargs": "^18.0.0"
 	},
 	"files": [
