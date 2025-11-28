@@ -13,11 +13,11 @@
 	},
 	"devDependencies": {
 		"@types/bun": "*",
-		"@types/yargs": "^17.0.33",
+		"@types/yargs": "^17.0.35",
 		"typescript": "*"
 	},
 	"dependencies": {
-		"chokidar": "^4.0.3",
+		"chokidar": "^5.0.0",
 		"yargs": "^18.0.0"
 	},
 	"files": [
