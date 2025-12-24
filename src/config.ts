@@ -107,14 +107,14 @@ export const argv = await yargs(hideBin(rawArgs))
         alias: "f",
         type: "string",
         description: "Config file",
-        default: "suglite.json",
+        default: "default",
     })
 
     // make config
     .command("mc [name]", "Make config", (yargs) => yargs
         .positional("name", { type: "string", description: "Predefined config reference name" }),
         (arg) => {
-            const file = arg.file ? arg.file : "suglite.json";
+            const file = arg.file && arg.file !== "default" ? arg.file : "suglite.json5";
             if (existsSync(file)) {
                 log(COLORS.red, file + " already exists");
                 process.exit(1);
@@ -158,6 +158,11 @@ log(COLORS.cyan, "Global configuration loaded from: " + globalConfigPath);
 if (argv.p) {
     config = deepMerge(config, loadPredefinedConfig(argv.p));
     log(COLORS.yellow, `Using predefined config: ${argv.p}`);
+}
+
+if (argv.file === "default") {
+    if (existsSync("suglite.json5")) argv.file = "suglite.json5";
+    else argv.file = "suglite.json";
 }
 
 if (existsSync(argv.file)) {

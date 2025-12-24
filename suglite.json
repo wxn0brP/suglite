@@ -1,6 +1,0 @@
-{
-    "cmd": "tsc --noEmit",
-    "watch": [
-        "src"
-    ]
-}

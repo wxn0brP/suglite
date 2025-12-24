@@ -59,3 +59,24 @@ While `suglite` is running, you can type:
 Global configuration is stored in:
 - Linux: `~/.config/suglite/config.json`.
 - Windows: `%APPDATA%\suglite\config.json`.
+
+## VSC Lint
+
+```json
+"json.schemas": [
+    {
+        "fileMatch": [
+            "suglite.json"
+        ],
+        "url": "https://raw.githubusercontent.com/wxn0brP/suglite/refs/heads/master/schema.json"
+    }
+],
+"json5.schemas": [
+    {
+        "fileMatch": [
+            "suglite.json5"
+        ],
+        "url": "https://raw.githubusercontent.com/wxn0brP/suglite/refs/heads/master/schema.json"
+    },
+],
+```
