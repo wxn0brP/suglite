@@ -1,10 +1,11 @@
 #!/usr/bin/env bun
 
 import { spawn } from "child_process";
-const { argv, processedCmd } = await import("./config");
+import { startWatcher } from "./watcher";
+const { argv, mainConfig: config } = await import("./config");
 
 if (argv.run !== undefined) {
-    let cmd = processedCmd;
+    let cmd = config.cmd;
     const sliceNum = parseInt(argv.run as string);
 
     if (!isNaN(sliceNum) && sliceNum > 0) {
@@ -22,12 +23,17 @@ if (argv.run !== undefined) {
     });
 
 } else {
-    const { startProcess, startupCommands } = await import("./process");
+    const { addProcess } = await import("./process");
     await import("./watcher");
     await import("./rl");
 
-    startProcess();
-    startupCommands();
+    const process = addProcess(config);
+    process.startProcess();
+    process.startupCommands();
+    process.index = argv.multi ? 0 : undefined
+
+    if (argv.multi)
+        await import("./multi");
 }
 
 export { };

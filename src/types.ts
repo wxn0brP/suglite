@@ -16,4 +16,5 @@ export interface SugliteConfig {
         redirect?: Record<string, string>;
     }
     startup_cmd?: string[];
+    cwd?: string;
 }

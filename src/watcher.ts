@@ -1,14 +1,25 @@
-import { config } from "./config";
 import chokidar from "chokidar";
-import { startProcess } from "./process";
+import { SugliteProcess } from "./process";
+import { SugliteConfig } from "./types";
+import { join } from "path";
 
-// Watch for file changes
-const watchList = config.watch.length > 0 ? config.watch : ["."];
-const watcher = chokidar.watch(watchList, {
-    ignored: config.ignore,
-    ignoreInitial: true,
-});
+export function startWatcher(config: SugliteConfig, process: SugliteProcess) {
+    const watchList = config.watch.length > 0 ? config.watch : ["."];
 
-watcher.on("change", startProcess);
-watcher.on("unlink", startProcess);
-watcher.on("add", startProcess);
+    const watcher = chokidar.watch(addCwd(config.cwd, watchList), {
+        ignored: addCwd(config.cwd, config.ignore || []),
+        ignoreInitial: true,
+    });
+
+    function restart() {
+        process.startProcess();
+    }
+
+    watcher.on("change", restart);
+    watcher.on("unlink", restart);
+    watcher.on("add", restart);
+}
+
+function addCwd(cwd: string, paths: string[]) {
+    return paths.map(path => join(cwd, path));
+}

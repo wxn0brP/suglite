@@ -1,81 +1,132 @@
 import { exec, spawn, ChildProcess, execSync } from "child_process";
-import { COLORS, log } from "./logger";
-import { config, processedCmd } from "./config";
+import { COLORS, log, logAdv } from "./logger";
 import { customCommandsProcess, handleLine } from "./rl";
+import { SugliteConfig } from "./types";
+import { startWatcher } from "./watcher";
 
-export let proc: ChildProcess | null = null;
-let restartTimeout: NodeJS.Timeout | null = null;
+export class SugliteProcess {
+    proc: ChildProcess | null = null;
+    restartTimeout: NodeJS.Timeout | null = null;
+    index: number;
 
-// Debounce restart
-export async function startProcess() {
-    if (restartTimeout) clearTimeout(restartTimeout);
+    constructor(private config: SugliteConfig) {
+        startWatcher(config, this);
+    }
 
-    restartTimeout = setTimeout(async () => {
-        await restartProcess();
-    }, 250 + config.delay);
-}
+    // Debounce restart
+    async startProcess() {
+        if (this.restartTimeout) clearTimeout(this.restartTimeout);
 
-// Function to start/restart the process
-async function restartProcess() {
-    if (proc) await stopProcess();
-    if (config.delay) await new Promise((resolve) => setTimeout(resolve, config.delay));
+        this.restartTimeout = setTimeout(async () => {
+            await this.restartProcess();
+        }, 250 + this.config.delay);
+    }
 
-    if (config.restart_cmd) {
-        exec(config.restart_cmd, (err, stdout) => {
-            if (stdout) log(COLORS.yellow, stdout.trim());
+    // Function to start/restart the process
+    async restartProcess() {
+        if (this.proc) await this.stopProcess();
+        if (this.config.delay) await new Promise((resolve) => setTimeout(resolve, this.config.delay));
+
+        if (this.config.restart_cmd) {
+            exec(this.config.restart_cmd, (err, stdout) => {
+                if (stdout) log(COLORS.yellow, stdout.trim());
+            });
+        }
+
+        logAdv({
+            color: COLORS.yellow,
+            prefix: "Restarting...",
+            index: this.index
+        });
+        logAdv({
+            color: COLORS.yellow,
+            prefix: "Running command:",
+            msg: this.config.cmd,
+            index: this.index
+        });
+
+        this.proc = spawn(this.config.cmd, {
+            stdio: "inherit",
+            shell: true,
+            cwd: this.config.cwd,
+        });
+
+        const pid = this.proc.pid;
+        if (!pid) {
+            logAdv({
+                color: COLORS.red,
+                prefix: "Failed to start process.",
+                index: this.index
+            });
+            return;
+        }
+
+        this.proc.on("exit", (code) => {
+            const success = code === 0 || code === null;
+            logAdv({
+                color: success ? COLORS.green : COLORS.red,
+                prefix: success ? "Majestic exit." : `Process crashed with exit code ${code}.`,
+                index: this.index
+            });
+            this.proc = null;
         });
     }
 
-    log(COLORS.yellow, "Restarting...");
-    log(COLORS.yellow, `Running command: ${processedCmd}`);
+    async stopProcess() {
+        if (this.proc && this.proc.pid) {
+            const pid = this.proc.pid;
+            logAdv({
+                color: COLORS.yellow,
+                prefix: "Stopping process",
+                msg: `${pid}...`,
+                index: this.index
+            });
 
-    proc = spawn(processedCmd, {
-        stdio: "inherit",
-        shell: true,
-    });
+            try {
+                this.proc.kill("SIGTERM");
 
-    const pid = proc.pid;
-    if (!pid) {
-        log(COLORS.red, "Failed to start process.");
-        return;
-    }
-
-    proc.on("exit", (code) => {
-        if (code === 0 || code === null) {
-            log(COLORS.green, "Majestic exit.");
-        } else {
-            log(COLORS.red, `Process crashed with exit code ${code}.`);
-        }
-        proc = null;
-    });
-}
-
-export async function stopProcess() {
-    if (proc && proc.pid) {
-        const pid = proc.pid;
-        log(COLORS.yellow, `Stopping process ${pid}...`);
-
-        try {
-            proc.kill("SIGTERM");
-
-            await new Promise((resolve) => setTimeout(resolve, 100));
-
-            if (isProcessAlive(pid)) {
-                log(COLORS.red, `Process ${pid} still alive. Killing forcefully.`);
-                proc.kill("SIGKILL");
-
-                await new Promise((resolve) => setTimeout(resolve, 2000));
+                await new Promise((resolve) => setTimeout(resolve, 100));
 
                 if (isProcessAlive(pid)) {
-                    log(COLORS.red, `Process ${pid} REFUSES TO DIE. Nuclear option engaged.`);
-                    killHard(pid);
-                }
-            }
-        } catch (err) {
-            log(COLORS.red, `Failed to kill process ${pid}:`, err);
-        }
+                    logAdv({
+                        color: COLORS.red,
+                        prefix: "Process",
+                        msg: `${pid} still alive. killing forcefully.`,
+                        index: this.index
+                    });
+                    this.proc.kill("SIGKILL");
 
-        proc = null;
+                    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+                    if (isProcessAlive(pid)) {
+                        logAdv({
+                            color: COLORS.red,
+                            prefix: "Process",
+                            msg: `${pid} REFUSES TO DIE. Nuclear option engaged.`,
+                            index: this.index
+                        });
+                        killHard(pid, this.index);
+                    }
+                }
+            } catch (err) {
+                logAdv({
+                    color: COLORS.red,
+                    prefix: "Failed to kill process",
+                    msg: `${pid}: ${err}`,
+                    index: this.index
+                });
+            }
+
+            this.proc = null;
+        }
+    }
+
+    async startupCommands() {
+        await new Promise((resolve) => setTimeout(resolve, this.config.delay + 500));
+        if (this.config.startup_cmd?.length) this.config.startup_cmd.forEach(handleLine);
+        if (typeof this.config.server !== "undefined" && typeof this.config.server !== "boolean" && !isNaN(+this.config.server)) {
+            handleLine(`server ${this.config.server}`);
+        }
     }
 }
 
@@ -88,31 +139,42 @@ function isProcessAlive(pid: number): boolean {
     }
 }
 
-export function killHard(pid: number) {
+export function killHard(pid: number, index?: number) {
     try {
         if (process.platform === "win32") {
             execSync(`taskkill /F /PID ${pid} /T`);
         } else {
             execSync(`kill -9 ${pid}`);
         }
-        log(COLORS.green, `Process ${pid} terminated with extreme prejudice.`);
+        logAdv({
+            color: COLORS.green,
+            msg: `Process ${pid} terminated with extreme prejudice.`,
+            index
+        });
     } catch (err) {
-        log(COLORS.red, `Even the nuclear option failed on ${pid}:`, err);
+        logAdv({
+            color: COLORS.red,
+            msg: `Even the nuclear option failed on ${pid}: ${err}`,
+            index
+        });
     }
 }
 
-export async function startupCommands() {
-    await new Promise((resolve) => setTimeout(resolve, config.delay + 500));
-    if (config.startup_cmd?.length) config.startup_cmd.forEach(handleLine);
-    if (typeof config.server !== "undefined" && typeof config.server !== "boolean" && !isNaN(+config.server)) {
-        handleLine(`server ${config.server}`);
-    }
+export const processes: SugliteProcess[] = [];
+
+export function addProcess(config: SugliteConfig) {
+    const process = new SugliteProcess(config);
+    processes.push(process);
+    return process;
 }
 
-process.on("exit", () => stopProcess());
+process.on("exit", () => {
+    processes.forEach((process) => process.stopProcess());
+});
+
 async function exitEvent() {
-    await stopProcess();
-    customCommandsProcess.forEach((process) => killHard(process.pid));
+    processes.forEach((process) => process.stopProcess());
+    customCommandsProcess.forEach((process, i) => killHard(process.pid));
     process.exit();
 }
 process.on("SIGINT", exitEvent);

@@ -9,7 +9,20 @@ export const COLORS = {
     cyan: "\x1b[36m",
 };
 
-// Function to print colored logs
-export function log(color: string, message: string, after?: string) {
-    return console.log(`${color}[Suglite] ${message}${COLORS.reset}${after ?? ""}`);
+export interface LogConfig {
+    color: string;
+    msg?: string;
+    prefix?: string;
+    index?: number;
+}
+
+export function logAdv(config: LogConfig) {
+    const index = config.index !== undefined ? `[${config.index}] ` : "";
+    const prefix = config.prefix !== undefined ? `${config.prefix} ` : "";
+    let prefixMsg = `${config.color}[Suglite] ${index}${prefix}${COLORS.reset}`;
+    console.log(`${prefixMsg}${config.msg ?? ""}`);
+}
+
+export function log(color: string, prefix: string, msg?: any) {
+    logAdv({ color, prefix, msg });
 }

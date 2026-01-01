@@ -1,13 +1,13 @@
 import { ChildProcess, spawn, SpawnOptions } from "child_process";
-import { config } from "./config";
-import { COLORS, log } from "./logger";
-import Readline from "readline";
-import { killHard, startProcess, stopProcess } from "./process";
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from "fs";
+import Readline from "readline";
+import { mainConfig, configs } from "./config";
+import { COLORS, log, logAdv, LogConfig } from "./logger";
+import { killHard, processes } from "./process";
 
 export const customCommandsProcess = new Map<string, ChildProcess>();
 
-if (config.history && config.history > 0) {
+if (mainConfig.history && mainConfig.history > 0) {
     if (!existsSync(".suglite_history")) writeFileSync(".suglite_history", "");
 }
 
@@ -29,7 +29,7 @@ function uniqueHistory(history?: string[]) {
 const rlOpts: Readline.ReadLineOptions = {
     input: process.stdin,
     output: process.stdout,
-    historySize: config.history,
+    historySize: mainConfig.history,
     history: uniqueHistory(),
 }
 
@@ -55,31 +55,35 @@ const rl = Readline.createInterface(rlOpts);
 rl.on("line", handleLine);
 
 export function handleLine(input: string) {
-    const cmdTrim = input.trim();
+    let cmdTrim = input.trim();
+    const split = cmdTrim.split(" ");
+    let index = +split[0];
+    if (isNaN(index)) index = 0;
+    else cmdTrim = split.slice(1).join(" ");
 
     const isNoLog = cmdTrim.startsWith("!");
     const eventKey = isNoLog ? cmdTrim.slice(1) : cmdTrim;
-    const cmdEvents = config.events[eventKey];
+    const cmdEvents = mainConfig.events[eventKey];
     if (cmdEvents) {
-        runCustomCommand(cmdEvents, !isNoLog);
+        runCustomCommand(cmdEvents, !isNoLog, configs[index].cwd);
     }
 
     if (cmdTrim.startsWith("$")) {
         const noLog = cmdTrim.startsWith("$!");
-        runCustomCommand(cmdTrim.slice(noLog ? 2 : 1), noLog);
-        if (config.history && config.history > 0) appendHistory(cmdTrim);
+        runCustomCommand(cmdTrim.slice(noLog ? 2 : 1), noLog, configs[index].cwd);
+        if (mainConfig.history && mainConfig.history > 0) appendHistory(cmdTrim);
     }
 
-    const mergedShells = [...trustedShells, ...config.trustedShells];
+    const mergedShells = [...trustedShells, ...mainConfig.trustedShells];
     const firstWord = cmdTrim.split(" ")[0].toLowerCase();
     if (mergedShells.includes(firstWord)) {
-        runCustomCommand(cmdTrim, false);
-        if (config.history && config.history > 0) appendHistory(cmdTrim);
+        runCustomCommand(cmdTrim, false, configs[index].cwd);
+        if (mainConfig.history && mainConfig.history > 0) appendHistory(cmdTrim);
     }
 
     switch (cmdTrim) {
         case "rs":
-            startProcess();
+            processes[index].startProcess();
             break;
         case "quit":
         case "exit":
@@ -108,7 +112,7 @@ export function handleLine(input: string) {
             break;
         case "config":
             log(COLORS.green, "Current config:");
-            console.log(JSON.stringify(config, null, 2));
+            console.log(JSON.stringify(mainConfig, null, 2));
             break;
         case "cls":
             console.clear();
@@ -118,7 +122,7 @@ export function handleLine(input: string) {
             break;
         case "show-cmd":
             log(COLORS.green, "Available custom commands:");
-            for (const [key, value] of Object.entries(config.events)) {
+            for (const [key, value] of Object.entries(mainConfig.events)) {
                 log(COLORS.green, "", `${key} -> ${value}`);
             }
             break;
@@ -143,7 +147,7 @@ export function handleLine(input: string) {
                 return;
             }
             log(COLORS.green, "Opening server...");
-            const url = `http://localhost:${config.server}`;
+            const url = `http://localhost:${mainConfig.server}`;
             if (process.platform === "win32") {
                 runCustomCommand(`start "" "${url}"`);
             } else if (process.platform === "darwin") {
@@ -164,19 +168,25 @@ export function handleLine(input: string) {
     }
 }
 
-function logExit(code: number) {
-    if (code === 0 || code === null)
-        log(COLORS.cyan, "Majestic exit from custom command.");
-    else
-        log(COLORS.magenta, `Custom command crashed with exit code ${code}.`);
+function logExit(code: number, index?: number) {
+    const cfg: LogConfig = { index } as any;
+    if (code === 0 || code === null) {
+        cfg.color = COLORS.cyan;
+        cfg.msg = "Majestic exit from custom command.";
+    } else {
+        cfg.color = COLORS.magenta;
+        cfg.msg = `Custom command crashed with exit code ${code}.`;
+    }
+    logAdv(cfg);
 }
 
-function runCustomCommand(command: string, prettyLog: boolean = true) {
+function runCustomCommand(command: string, prettyLog: boolean = true, cwd = process.cwd(), index?: number) {
     let cmdTrim = command.trim();
     log(COLORS.blue, `Running command: ${command}`);
 
     const opts: SpawnOptions = {
         shell: true,
+        cwd,
     }
     if (!prettyLog) opts.stdio = "inherit";
 
@@ -185,10 +195,20 @@ function runCustomCommand(command: string, prettyLog: boolean = true) {
 
     if (prettyLog) {
         cmdProcess.stdout.on("data", (data) => {
-            log(COLORS.cyan, "[stdout] ", data.toString().trim());
+            logAdv({
+                color: COLORS.cyan,
+                prefix: "[stdout]",
+                msg: data.toString().trim(),
+                index
+            });
         });
         cmdProcess.stderr.on("data", (data) => {
-            log(COLORS.magenta, "[stderr] ", data.toString().trim());
+            logAdv({
+                color: COLORS.magenta,
+                prefix: "[stderr]",
+                msg: data.toString().trim(),
+                index
+            });
         });
     }
 
@@ -201,7 +221,7 @@ function runCustomCommand(command: string, prettyLog: boolean = true) {
 async function exitEvent() {
     log(COLORS.green, "Process interrupted. Exiting...");
     rl.close();
-    await stopProcess();
+    processes.forEach((process) => process.stopProcess());
     customCommandsProcess.forEach((process) => killHard(process.pid));
     process.exit(0);
 }
