@@ -34,7 +34,7 @@ const multiConfig = multiConfigRaw.map((config) => {
         cfg.cwd = cwd;
         return cfg;
     }
-    return config;
+    return Object.assign(getEmptyConfig(), config);
 });
 
 multiConfig.forEach((config, i) => {
