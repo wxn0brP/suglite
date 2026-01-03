@@ -1,7 +1,7 @@
 import { ChildProcess, spawn, SpawnOptions } from "child_process";
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from "fs";
 import Readline from "readline";
-import { mainConfig, configs } from "./config";
+import { configs, mainConfig } from "./config";
 import { COLORS, log, logAdv, LogConfig } from "./logger";
 import { killHard, processes } from "./process";
 
@@ -103,6 +103,8 @@ export function handleLine(input: string) {
             log(COLORS.green, "", "cls -> Clear console");
             log(COLORS.green, "", "unique-history -> Make history unique");
             log(COLORS.green, "", "show-cmd -> Show available custom commands");
+            log(COLORS.green, "", "m -> Run multiple instances");
+            log(COLORS.green, "", "show-m -> Show multiple configs");
             log(COLORS.green, "", "server [port] -> Start server");
             log(COLORS.green, "", "server stop -> Stop server");
             log(COLORS.green, "Trusted shells:");
@@ -124,6 +126,15 @@ export function handleLine(input: string) {
             log(COLORS.green, "Available custom commands:");
             for (const [key, value] of Object.entries(mainConfig.events)) {
                 log(COLORS.green, "", `${key} -> ${value}`);
+            }
+            break;
+        case "m":
+            import("./multi").then(({ multi }) => multi());
+            break;
+        case "show-m":
+            log(COLORS.green, "Available multiple configs:");
+            for (const [key, value] of Object.entries(configs)) {
+                log(COLORS.green, "", `${key} -> ${value.cmd} -> ${value.cwd} / ${value.watch.join(",")}`);
             }
             break;
     }

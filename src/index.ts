@@ -1,7 +1,6 @@
 #!/usr/bin/env bun
 
 import { spawn } from "child_process";
-import { startWatcher } from "./watcher";
 const { argv, mainConfig: config } = await import("./config");
 
 if (argv.run !== undefined) {
@@ -26,6 +25,7 @@ if (argv.run !== undefined) {
     const { addProcess } = await import("./process");
     await import("./watcher");
     await import("./rl");
+    globalThis.multiRun = false;
 
     const process = addProcess(config);
     process.startProcess();
@@ -33,7 +33,7 @@ if (argv.run !== undefined) {
     process.index = argv.multi ? 0 : undefined
 
     if (argv.multi)
-        await import("./multi");
+        await import("./multi").then(({ multi }) => multi());
 }
 
 export { };
