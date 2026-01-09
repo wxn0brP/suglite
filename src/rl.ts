@@ -61,6 +61,11 @@ export function handleLine(input: string) {
     if (isNaN(index)) index = 0;
     else cmdTrim = split.slice(1).join(" ");
 
+    if (processes.length <= index) {
+        log(COLORS.red, "Invalid process index");
+        return;
+    }
+
     const isNoLog = cmdTrim.startsWith("!");
     const eventKey = isNoLog ? cmdTrim.slice(1) : cmdTrim;
     const cmdEvents = mainConfig.events[eventKey];
