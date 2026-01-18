@@ -48,6 +48,8 @@ const trustedShells = [
     "cargo",
     // Go
     "go",
+    // c/cpp
+    "make", "cmake", "gcc", "clang", "g++", "qmake", "ninja"
 ];
 
 // Handle terminal input events
