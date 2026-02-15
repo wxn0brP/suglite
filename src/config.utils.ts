@@ -1,4 +1,4 @@
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import JSON5 from "json5";
 import { SugliteConfig } from "./types";
 
@@ -8,6 +8,10 @@ export function loadJson<T = any>(path: string): T {
     } catch (err) {
         return {} as T;
     }
+}
+
+export function saveJson5(path: string, data: any) {
+    writeFileSync(path, JSON5.stringify(data, null, 4));
 }
 
 export function getSuglitePath() {

@@ -1,8 +1,8 @@
-import { existsSync, mkdirSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, rmSync, writeFileSync } from "fs";
 import { homedir } from "os";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import { getEmptyConfig, getSuglitePath, loadJson, loadPredefinedConfig } from "./config.utils";
+import { getEmptyConfig, getSuglitePath, loadJson, loadPredefinedConfig, saveJson5 } from "./config.utils";
 import { groupArguments } from "./groupArgs";
 import { COLORS, log } from "./logger";
 import { SugliteConfig } from "./types";
@@ -133,6 +133,15 @@ export const argv = await yargs(hideBin(rawArgs))
     .command("id", "display instance info", () => {
         log(COLORS.cyan, "Dir: ", import.meta.dirname.split("/").slice(0, -1).join("/"));
         log(COLORS.cyan, "Version: ", version);
+        process.exit(0);
+    })
+
+    .command("migrate", "migrate config from json to json5", () => {
+        if (existsSync("suglite.json")) {
+            const config = loadJson("suglite.json");
+            saveJson5("suglite.json5", config);
+            rmSync("suglite.json");
+        }
         process.exit(0);
     })
 
