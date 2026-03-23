@@ -1,29 +1,29 @@
 {
-	"name": "suglite",
-	"version": "0.2.3",
-	"main": "src/index.ts",
-	"author": "wxn0brP",
-	"license": "MIT",
-	"type": "module",
-	"bin": {
-		"suglite": "./src/index.ts"
-	},
-	"scripts": {
-		"start": "bun run src/index.ts"
-	},
-	"devDependencies": {
-		"@types/bun": "*",
-		"@types/yargs": "^17.0.35",
-		"typescript": "*"
-	},
-	"dependencies": {
-		"chokidar": "^5.0.0",
-		"json5": "^2.2.3",
-		"yargs": "^18.0.0"
-	},
-	"files": [
-		"src/**/*",
-		"config/**/*",
-		"package.json"
-	]
+    "name": "suglite",
+    "version": "0.2.3",
+    "main": "src/index.ts",
+    "author": "wxn0brP",
+    "license": "MIT",
+    "type": "module",
+    "bin": {
+        "suglite": "./src/index.ts"
+    },
+    "scripts": {
+        "start": "bun run src/index.ts"
+    },
+    "devDependencies": {
+        "@types/bun": "*",
+        "@types/yargs": "^17.0.35",
+        "typescript": "^5"
+    },
+    "dependencies": {
+        "chokidar": "^5.0.0",
+        "json5": "^2.2.3",
+        "yargs": "^18.0.0"
+    },
+    "files": [
+        "src/**/*",
+        "config/**/*",
+        "package.json"
+    ]
 }
