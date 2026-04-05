@@ -56,6 +56,27 @@ const trustedShells = [
 const rl = Readline.createInterface(rlOpts);
 rl.on("line", handleLine);
 
+function interpolateCmd(template: string, args: string[]): string {
+    let result = template;
+    // Replace $1, $2, $3, ... with corresponding args (1-indexed like bash)
+    result = result.replace(/\$(\d+)/g, (_, n) => {
+        const idx = +n - 1;
+        return idx >= 0 && idx < args.length ? args[idx] : "";
+    });
+    // Replace $@ with all args joined
+    result = result.replace(/\$@/g, () => args.join(" "));
+    // Replace $* with all args joined (alias for $@)
+    result = result.replace(/\$\*/g, () => args.join(" "));
+
+    const hasPlaceholders = /\$\d+|\$@|\$\*/.test(template);
+    // If no placeholders were used, append args at the end
+    if (!hasPlaceholders && args.length > 0) {
+        result += " " + args.join(" ");
+    }
+
+    return result;
+}
+
 export function handleLine(input: string) {
     let cmdTrim = input.trim();
     const split = cmdTrim.split(" ");
@@ -69,10 +90,15 @@ export function handleLine(input: string) {
     }
 
     const isNoLog = cmdTrim.startsWith("!");
-    const eventKey = isNoLog ? cmdTrim.slice(1) : cmdTrim;
-    const cmdEvents = mainConfig.events[eventKey];
-    if (cmdEvents) {
-        runCustomCommand(cmdEvents, !isNoLog, configs[index].cwd);
+    const rawKey = isNoLog ? cmdTrim.slice(1) : cmdTrim;
+    const cmdParts = rawKey.split(" ");
+    const eventKey = cmdParts[0];
+    const cmdArgs = cmdParts.slice(1);
+
+    const cmdTemplate = mainConfig.cmds[eventKey];
+    if (cmdTemplate) {
+        const resolved = interpolateCmd(cmdTemplate, cmdArgs);
+        runCustomCommand(resolved, !isNoLog, configs[index].cwd);
     }
 
     if (cmdTrim.startsWith("$")) {
@@ -131,7 +157,7 @@ export function handleLine(input: string) {
             break;
         case "show-cmd":
             log(COLORS.green, "Available custom commands:");
-            for (const [key, value] of Object.entries(mainConfig.events)) {
+            for (const [key, value] of Object.entries(mainConfig.cmds)) {
                 log(COLORS.green, "", `${key} -> ${value}`);
             }
             break;

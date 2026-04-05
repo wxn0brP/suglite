@@ -36,7 +36,7 @@
             "type": "string",
             "$comment": "Command executed before restarting process"
         },
-        "events": {
+        "cmds": {
             "type": "object",
             "additionalProperties": {
                 "type": "string"

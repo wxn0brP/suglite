@@ -4,7 +4,7 @@
         "src"
     ],
     "restart_cmd": "clear",
-    "events": {
+    "cmds": {
         "clean": "rm -rf dist"
     }
 }

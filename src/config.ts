@@ -225,4 +225,10 @@ if ((processedCmd.startsWith(`"`) && processedCmd.endsWith(`"`)) || (processedCm
     processedCmd = processedCmd.slice(1, -1);
 }
 
+// Legacy
+if ((mainConfig as any).events) {
+    log(COLORS.red, `[deprecated] "events" is deprecated, use "cmds"`);
+    Object.assign(mainConfig.cmds ??= {}, (mainConfig as any).events);
+}
+
 mainConfig.cmd = processedCmd;

@@ -51,8 +51,8 @@ While `suglite` is running, you can type:
 | `cls` | clear the console |
 | `$<command>` | execute a shell command (eg `$yarn add`) |
 | `$!<command>` | execute a shell command with pretty logging |
-| `<event>` | execute a custom command from `events` |
-| `<!event>` | execute a custom command from `events` without pretty logging |
+| `<cmd>` | execute a custom command from `cmds` |
+| `<!cmd>` | execute a custom command from `cmds` without pretty logging |
 
 ## Global Configuration  
 

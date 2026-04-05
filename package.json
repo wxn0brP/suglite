@@ -1,6 +1,6 @@
 {
     "name": "suglite",
-    "version": "0.2.3",
+    "version": "0.3.0",
     "main": "src/index.ts",
     "author": "wxn0brP",
     "license": "MIT",
@@ -14,7 +14,7 @@
     "devDependencies": {
         "@types/bun": "*",
         "@types/yargs": "^17.0.35",
-        "typescript": "^5"
+        "typescript": "^6"
     },
     "dependencies": {
         "chokidar": "^5.0.0",

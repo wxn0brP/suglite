@@ -4,7 +4,7 @@
         "src"
     ],
     "restart_cmd": "clear",
-    "events": {
+    "cmds": {
         "clean": "go clean",
         "build": "go build",
         "test": "go test",

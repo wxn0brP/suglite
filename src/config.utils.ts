@@ -29,7 +29,7 @@ export function getEmptyConfig() {
         watch: [],
         ignore: [],
         restart_cmd: "",
-        events: {},
+        cmds: {},
         history: 100,
         delay: 0,
         trustedShells: [],
