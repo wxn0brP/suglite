@@ -1,25 +1,31 @@
-import chokidar from "chokidar";
+import { watch } from "fs";
+import pm from "picomatch";
 import { SugliteProcess } from "./process";
 import { SugliteConfig } from "./types";
-import { join } from "path";
+
+function normalizePatterns(patterns: string[]) {
+    return patterns.map(p => {
+        if (!p.includes("*") && !p.includes("."))
+            return p.endsWith("/") ? `${p}**` : `${p}/**`;
+        return p;
+    });
+};
 
 export function startWatcher(config: SugliteConfig, process: SugliteProcess) {
-    const watchList = config.watch.length > 0 ? config.watch : ["."];
+    const rawWatchList = config.watch.length > 0 ? config.watch : ["**/*"];
+    const rawIgnoreList = config.ignore || [];
 
-    const watcher = chokidar.watch(addCwd(config.cwd, watchList), {
-        ignored: addCwd(config.cwd, config.ignore || []),
-        ignoreInitial: true,
-    });
+    const watchPatterns = normalizePatterns(rawWatchList);
+    const ignorePatterns = normalizePatterns(rawIgnoreList);
 
-    function restart() {
+    const isMatch = pm(watchPatterns, { ignore: ignorePatterns, dot: true });
+
+    watch(config.cwd, { recursive: true }, (event, filename) => {
+        if (!filename) return;
+
+        const rel = filename.replace(/\\/g, "/");
+        if (!isMatch(rel)) return;
+
         process.startProcess();
-    }
-
-    watcher.on("change", restart);
-    watcher.on("unlink", restart);
-    watcher.on("add", restart);
-}
-
-function addCwd(cwd: string, paths: string[]) {
-    return paths.map(path => join(cwd, path));
+    });
 }

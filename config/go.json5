@@ -1,0 +1,13 @@
+{
+    cmd: "go run src/main.go",
+    watch: [
+        "src"
+    ],
+    cmds: {
+        clean: "go clean",
+        build: "go build",
+        test: "go test",
+        tidy: "go mod tidy",
+        fmt: "go fmt"
+    }
+}

@@ -140,14 +140,11 @@ export function handleLine(input: string) {
             log(COLORS.green, "", "show-m -> Show multiple configs");
             log(COLORS.green, "", "server [port] -> Start server");
             log(COLORS.green, "", "server stop -> Stop server");
-            log(COLORS.green, "Trusted shells:");
-            for (const shell of trustedShells) {
-                log(COLORS.green, "", shell);
-            }
+            log(COLORS.green, "Trusted shells:", trustedShells.join(", "));
             break;
         case "config":
             log(COLORS.green, "Current config:");
-            console.log(JSON.stringify(mainConfig, null, 2));
+            console.log(Bun.JSON5.stringify(mainConfig, null, 2));
             break;
         case "cls":
             console.clear();

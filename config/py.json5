@@ -1,0 +1,6 @@
+{
+    cmd: "python src/main.py",
+    watch: [
+        "src"
+    ]
+}

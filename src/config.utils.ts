@@ -1,17 +1,16 @@
 import { readFileSync, writeFileSync } from "fs";
-import JSON5 from "json5";
 import { SugliteConfig } from "./types";
 
 export function loadJson<T = any>(path: string): T {
     try {
-        return JSON5.parse(readFileSync(path, "utf8"));
+        return Bun.JSON5.parse(readFileSync(path, "utf8")) as any;
     } catch (err) {
         return {} as T;
     }
 }
 
 export function saveJson5(path: string, data: any) {
-    writeFileSync(path, JSON5.stringify(data, null, 4));
+    writeFileSync(path, Bun.JSON5.stringify(data, null, 4));
 }
 
 export function getSuglitePath() {
@@ -19,7 +18,7 @@ export function getSuglitePath() {
 }
 
 export function loadPredefinedConfig(name: string) {
-    return loadJson(getSuglitePath() + `config/${name}.json`);
+    return loadJson(getSuglitePath() + `config/${name}.json5`);
 }
 
 export function getEmptyConfig() {

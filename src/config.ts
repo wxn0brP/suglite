@@ -18,7 +18,7 @@ const globalConfigDir = (
         process.env.APPDATA || "" :
         homedir() + "/.config"
 ) + "/suglite";
-const globalConfigPath = globalConfigDir + "/config.json";
+const globalConfigPath = globalConfigDir + "/config.json5";
 
 const rawArgs = groupArguments(process.argv);
 export const argv = await yargs(hideBin(rawArgs))
@@ -94,6 +94,12 @@ export const argv = await yargs(hideBin(rawArgs))
         default: "default",
     })
 
+    .option("igc", {
+        type: "boolean",
+        description: "Ignore global config",
+        default: false,
+    })
+
     .option("multi", {
         type: "boolean",
         alias: "m",
@@ -114,7 +120,7 @@ export const argv = await yargs(hideBin(rawArgs))
                 mainConfig = deepMerge(mainConfig, loadPredefinedConfig(arg.name));
                 log(COLORS.yellow, `Using predefined config: ${arg.name}`);
             }
-            writeFileSync(file, JSON.stringify(mainConfig, null, 4));
+            writeFileSync(file, Bun.JSON5.stringify(mainConfig, null, 4));
             log(COLORS.green, file + " created");
             process.exit(0);
         })
@@ -125,7 +131,7 @@ export const argv = await yargs(hideBin(rawArgs))
             process.exit(1);
         }
         if (!existsSync(globalConfigDir)) mkdirSync(globalConfigDir);
-        writeFileSync(globalConfigPath, JSON.stringify(mainConfig, null, 4));
+        writeFileSync(globalConfigPath, Bun.JSON5.stringify(mainConfig, null, 4));
         log(COLORS.green, globalConfigPath + " created");
         process.exit(0);
     })
@@ -151,7 +157,7 @@ export const argv = await yargs(hideBin(rawArgs))
     .strict()
     .parse();
 
-const globalConfig = existsSync(globalConfigPath) ? loadJson(globalConfigPath) : {};
+const globalConfig = existsSync(globalConfigPath) && !argv.igc ? loadJson(globalConfigPath) : {};
 mainConfig = deepMerge(mainConfig, globalConfig);
 log(COLORS.cyan, "Global configuration loaded from:", globalConfigPath);
 
