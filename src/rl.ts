@@ -124,8 +124,8 @@ export function handleLine(input: string) {
             process.exit(0);
         case "help":
             log(COLORS.green, "Commands:");
-            log(COLORS.green, "", "<event> -> Run event command (see 'show-cmd')");
-            log(COLORS.green, "", "!<event> -> Run event command without pretty logging");
+            log(COLORS.green, "", "<cmd> -> Run pre-defined command (see 'show-cmd')");
+            log(COLORS.green, "", "!<cmd> -> Run pre-defined command without pretty logging");
             log(COLORS.green, "", "$<command> -> Run shell command");
             log(COLORS.green, "", "$!<command> -> Run shell command with pretty logging");
             log(COLORS.green, "System commands:");
