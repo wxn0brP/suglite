@@ -8,48 +8,65 @@ import { killHard, processes } from "./process";
 export const customCommandsProcess = new Map<string, ChildProcess>();
 
 if (mainConfig.history && mainConfig.history > 0) {
-    if (!existsSync(".suglite_history")) writeFileSync(".suglite_history", "");
+	if (!existsSync(".suglite_history")) writeFileSync(".suglite_history", "");
 }
 
 function readHistory() {
-    return existsSync(".suglite_history") ? readFileSync(".suglite_history", "utf8").split("\n") : [];
+	return existsSync(".suglite_history")
+		? readFileSync(".suglite_history", "utf8").split("\n")
+		: [];
 }
 
 function appendHistory(input: string) {
-    appendFileSync(".suglite_history", input + "\n");
+	appendFileSync(".suglite_history", input + "\n");
 }
 
 function uniqueHistory(history?: string[]) {
-    if (!history) history = readHistory();
-    history = [...new Set(history)];
-    writeFileSync(".suglite_history", history.join("\n"));
-    return history;
+	if (!history) history = readHistory();
+	history = [
+		...new Set(history),
+	];
+	writeFileSync(".suglite_history", history.join("\n"));
+	return history;
 }
 
 const rlOpts: Readline.ReadLineOptions = {
-    input: process.stdin,
-    output: process.stdout,
-    historySize: mainConfig.history,
-    history: uniqueHistory(),
-}
+	input: process.stdin,
+	output: process.stdout,
+	historySize: mainConfig.history,
+	history: uniqueHistory(),
+};
 
 const trustedShells = [
-    // TS/JS
-    "yarn", "npm", "pnpm", "node", "bun", "tsc",
-    // My tools
-    "bumr",
-    // Bash
-    "git",
-    // Docker
-    "docker", "docker-compose",
-    // Python
-    "python", "pip",
-    // Rust
-    "cargo",
-    // Go
-    "go",
-    // c/cpp
-    "make", "cmake", "gcc", "clang", "g++", "qmake", "ninja"
+	// TS/JS
+	"yarn",
+	"npm",
+	"pnpm",
+	"node",
+	"bun",
+	"tsc",
+	// My tools
+	"bumr",
+	// Bash
+	"git",
+	// Docker
+	"docker",
+	"docker-compose",
+	// Python
+	"python",
+	"pip",
+	// Rust
+	"cargo",
+	// Go
+	"go",
+	// c/cpp
+	"make",
+	"cmake",
+	"gcc",
+	"clang",
+	"g++",
+	"qmake",
+	"ninja",
 ];
 
 // Handle terminal input events
@@ -57,214 +74,245 @@ const rl = Readline.createInterface(rlOpts);
 rl.on("line", handleLine);
 
 function interpolateCmd(template: string, args: string[]): string {
-    let result = template;
-    // Replace $1, $2, $3, ... with corresponding args (1-indexed like bash)
-    result = result.replace(/\$(\d+)/g, (_, n) => {
-        const idx = +n - 1;
-        return idx >= 0 && idx < args.length ? args[idx] : "";
-    });
-    // Replace $@ with all args joined
-    result = result.replace(/\$@/g, () => args.join(" "));
-    // Replace $* with all args joined (alias for $@)
-    result = result.replace(/\$\*/g, () => args.join(" "));
+	let result = template;
+	// Replace $1, $2, $3, ... with corresponding args (1-indexed like bash)
+	result = result.replace(/\$(\d+)/g, (_, n) => {
+		const idx = +n - 1;
+		return idx >= 0 && idx < args.length ? args[idx] : "";
+	});
+	// Replace $@ with all args joined
+	result = result.replace(/\$@/g, () => args.join(" "));
+	// Replace $* with all args joined (alias for $@)
+	result = result.replace(/\$\*/g, () => args.join(" "));
 
-    const hasPlaceholders = /\$\d+|\$@|\$\*/.test(template);
-    // If no placeholders were used, append args at the end
-    if (!hasPlaceholders && args.length > 0) {
-        result += " " + args.join(" ");
-    }
+	const hasPlaceholders = /\$\d+|\$@|\$\*/.test(template);
+	// If no placeholders were used, append args at the end
+	if (!hasPlaceholders && args.length > 0) {
+		result += " " + args.join(" ");
+	}
 
-    return result;
+	return result;
 }
 
 export function handleLine(input: string) {
-    let cmdTrim = input.trim();
-    const split = cmdTrim.split(" ");
-    let index = +split[0];
-    if (isNaN(index)) index = 0;
-    else cmdTrim = split.slice(1).join(" ");
+	let cmdTrim = input.trim();
+	const split = cmdTrim.split(" ");
+	let index = +split[0];
+	if (Number.isNaN(index)) index = 0;
+	else cmdTrim = split.slice(1).join(" ");
 
-    if (processes.length <= index) {
-        log(COLORS.red, "Invalid process index");
-        return;
-    }
+	if (processes.length <= index) {
+		log(COLORS.red, "Invalid process index");
+		return;
+	}
 
-    const isNoLog = cmdTrim.startsWith("!");
-    const rawKey = isNoLog ? cmdTrim.slice(1) : cmdTrim;
-    const cmdParts = rawKey.split(" ");
-    const eventKey = cmdParts[0];
-    const cmdArgs = cmdParts.slice(1);
+	const isNoLog = cmdTrim.startsWith("!");
+	const rawKey = isNoLog ? cmdTrim.slice(1) : cmdTrim;
+	const cmdParts = rawKey.split(" ");
+	const eventKey = cmdParts[0];
+	const cmdArgs = cmdParts.slice(1);
 
-    const cmdTemplate = mainConfig.cmds[eventKey];
-    if (cmdTemplate) {
-        const resolved = interpolateCmd(cmdTemplate, cmdArgs);
-        runCustomCommand(resolved, !isNoLog, configs[index].cwd);
-    }
+	const cmdTemplate = mainConfig.cmds[eventKey];
+	if (cmdTemplate) {
+		const resolved = interpolateCmd(cmdTemplate, cmdArgs);
+		runCustomCommand(resolved, !isNoLog, configs[index].cwd);
+	}
 
-    if (cmdTrim.startsWith("$")) {
-        const noLog = cmdTrim.startsWith("$!");
-        runCustomCommand(cmdTrim.slice(noLog ? 2 : 1), noLog, configs[index].cwd);
-        if (mainConfig.history && mainConfig.history > 0) appendHistory(cmdTrim);
-    }
+	if (cmdTrim.startsWith("$")) {
+		const noLog = cmdTrim.startsWith("$!");
+		runCustomCommand(cmdTrim.slice(noLog ? 2 : 1), noLog, configs[index].cwd);
+		if (mainConfig.history && mainConfig.history > 0) appendHistory(cmdTrim);
+	}
 
-    const mergedShells = [...trustedShells, ...mainConfig.trustedShells];
-    const firstWord = cmdTrim.split(" ")[0].toLowerCase();
-    if (mergedShells.includes(firstWord)) {
-        runCustomCommand(cmdTrim, false, configs[index].cwd);
-        if (mainConfig.history && mainConfig.history > 0) appendHistory(cmdTrim);
-    }
+	const mergedShells = [
+		...trustedShells,
+		...mainConfig.trustedShells,
+	];
+	const firstWord = cmdTrim.split(" ")[0].toLowerCase();
+	if (mergedShells.includes(firstWord)) {
+		runCustomCommand(cmdTrim, false, configs[index].cwd);
+		if (mainConfig.history && mainConfig.history > 0) appendHistory(cmdTrim);
+	}
 
-    switch (cmdTrim) {
-        case "rs":
-            processes[index].startProcess();
-            break;
-        case "quit":
-        case "exit":
-            log(COLORS.green, "Shutting down...");
-            process.exit(0);
-        case "help":
-            log(COLORS.green, "Commands:");
-            log(COLORS.green, "", "<cmd> -> Run pre-defined command (see 'show-cmd')");
-            log(COLORS.green, "", "!<cmd> -> Run pre-defined command without pretty logging");
-            log(COLORS.green, "", "$<command> -> Run shell command");
-            log(COLORS.green, "", "$!<command> -> Run shell command with pretty logging");
-            log(COLORS.green, "System commands:");
-            log(COLORS.green, "", "rs -> Restart process");
-            log(COLORS.green, "", "quit/exit -> Exit");
-            log(COLORS.green, "", "help -> Show help");
-            log(COLORS.green, "", "config -> Show current config");
-            log(COLORS.green, "", "cls -> Clear console");
-            log(COLORS.green, "", "unique-history -> Make history unique");
-            log(COLORS.green, "", "show-cmd -> Show available custom commands");
-            log(COLORS.green, "", "m -> Run multiple instances");
-            log(COLORS.green, "", "show-m -> Show multiple configs");
-            log(COLORS.green, "", "server [port] -> Start server");
-            log(COLORS.green, "", "server stop -> Stop server");
-            log(COLORS.green, "Trusted shells:", trustedShells.join(", "));
-            break;
-        case "config":
-            log(COLORS.green, "Current config:");
-            console.log(Bun.JSON5.stringify(mainConfig, null, 2));
-            break;
-        case "cls":
-            console.clear();
-            break;
-        case "unique-history":
-            uniqueHistory();
-            break;
-        case "show-cmd":
-            log(COLORS.green, "Available custom commands:");
-            for (const [key, value] of Object.entries(mainConfig.cmds)) {
-                log(COLORS.green, "", `${key} -> ${value}`);
-            }
-            break;
-        case "m":
-            import("./multi").then(({ multi }) => multi());
-            break;
-        case "show-m":
-            log(COLORS.green, "Available multiple configs:");
-            for (const [key, value] of Object.entries(configs)) {
-                log(COLORS.green, "", `${key} -> ${value.cmd} -> ${value.cwd} / ${value.watch.join(",")}`);
-            }
-            break;
-    }
+	switch (cmdTrim) {
+		case "rs":
+			processes[index].startProcess();
+			break;
+		case "quit":
+		case "exit":
+			log(COLORS.green, "Shutting down...");
+			process.exit(0);
+			break;
+		case "help":
+			log(COLORS.green, "Commands:");
+			log(
+				COLORS.green,
+				"",
+				"<cmd> -> Run pre-defined command (see 'show-cmd')",
+			);
+			log(
+				COLORS.green,
+				"",
+				"!<cmd> -> Run pre-defined command without pretty logging",
+			);
+			log(COLORS.green, "", "$<command> -> Run shell command");
+			log(
+				COLORS.green,
+				"",
+				"$!<command> -> Run shell command with pretty logging",
+			);
+			log(COLORS.green, "System commands:");
+			log(COLORS.green, "", "rs -> Restart process");
+			log(COLORS.green, "", "quit/exit -> Exit");
+			log(COLORS.green, "", "help -> Show help");
+			log(COLORS.green, "", "config -> Show current config");
+			log(COLORS.green, "", "cls -> Clear console");
+			log(COLORS.green, "", "unique-history -> Make history unique");
+			log(COLORS.green, "", "show-cmd -> Show available custom commands");
+			log(COLORS.green, "", "m -> Run multiple instances");
+			log(COLORS.green, "", "show-m -> Show multiple configs");
+			log(COLORS.green, "", "server [port] -> Start server");
+			log(COLORS.green, "", "server stop -> Stop server");
+			log(COLORS.green, "Trusted shells:", trustedShells.join(", "));
+			break;
+		case "config":
+			log(COLORS.green, "Current config:");
+			console.log(Bun.JSON5.stringify(mainConfig, null, 2));
+			break;
+		case "cls":
+			console.clear();
+			break;
+		case "unique-history":
+			uniqueHistory();
+			break;
+		case "show-cmd":
+			log(COLORS.green, "Available custom commands:");
+			for (const [key, value] of Object.entries(mainConfig.cmds)) {
+				log(COLORS.green, "", `${key} -> ${value}`);
+			}
+			break;
+		case "m":
+			import("./multi").then(({ multi }) => multi());
+			break;
+		case "show-m":
+			log(COLORS.green, "Available multiple configs:");
+			for (const [key, value] of Object.entries(configs)) {
+				log(
+					COLORS.green,
+					"",
+					`${key} -> ${value.cmd} -> ${value.cwd} / ${value.watch.join(",")}`,
+				);
+			}
+			break;
+	}
 
-    if (cmdTrim.startsWith("server")) {
-        const exists = [...customCommandsProcess.keys()].filter(key => key.startsWith("server")).length > 0;
-        if (cmdTrim.includes("stop")) {
-            if (!exists) {
-                log(COLORS.red, "Server not running");
-                return;
-            }
-            log(COLORS.green, "Stopping server...");
-            killHard(customCommandsProcess.get("server").pid);
-            customCommandsProcess.delete("server");
-            return;
-        }
+	if (cmdTrim.startsWith("server")) {
+		const exists =
+			[
+				...customCommandsProcess.keys(),
+			].filter(key => key.startsWith("server")).length > 0;
+		if (cmdTrim.includes("stop")) {
+			if (!exists) {
+				log(COLORS.red, "Server not running");
+				return;
+			}
+			log(COLORS.green, "Stopping server...");
+			killHard(customCommandsProcess.get("server").pid);
+			customCommandsProcess.delete("server");
+			return;
+		}
 
-        if (cmdTrim.includes("open")) {
-            if (!exists) {
-                log(COLORS.red, "Server not running");
-                return;
-            }
-            log(COLORS.green, "Opening server...");
-            const url = `http://localhost:${mainConfig.server}`;
-            if (process.platform === "win32") {
-                runCustomCommand(`start "" "${url}"`);
-            } else if (process.platform === "darwin") {
-                runCustomCommand(`open ${url}`);
-            } else {
-                runCustomCommand(`xdg-open ${url}`);
-            }
-            return;
-        }
+		if (cmdTrim.includes("open")) {
+			if (!exists) {
+				log(COLORS.red, "Server not running");
+				return;
+			}
+			log(COLORS.green, "Opening server...");
+			const url = `http://localhost:${mainConfig.server}`;
+			if (process.platform === "win32") {
+				runCustomCommand(`start "" "${url}"`);
+			} else if (process.platform === "darwin") {
+				runCustomCommand(`open ${url}`);
+			} else {
+				runCustomCommand(`xdg-open ${url}`);
+			}
+			return;
+		}
 
-        if (exists) {
-            log(COLORS.red, "Server already running");
-            return;
-        }
+		if (exists) {
+			log(COLORS.red, "Server already running");
+			return;
+		}
 
-        log(COLORS.green, "Starting server...");
-        runCustomCommand(cmdTrim, false);
-    }
+		log(COLORS.green, "Starting server...");
+		runCustomCommand(cmdTrim, false);
+	}
 }
 
 function logExit(code: number, index?: number) {
-    const cfg: LogConfig = { index } as any;
-    if (code === 0 || code === null) {
-        cfg.color = COLORS.cyan;
-        cfg.msg = "Majestic exit from custom command.";
-    } else {
-        cfg.color = COLORS.magenta;
-        cfg.msg = `Custom command crashed with exit code ${code}.`;
-    }
-    logAdv(cfg);
+	const cfg: LogConfig = {
+		index,
+	} as any;
+	if (code === 0 || code === null) {
+		cfg.color = COLORS.cyan;
+		cfg.msg = "Majestic exit from custom command.";
+	} else {
+		cfg.color = COLORS.magenta;
+		cfg.msg = `Custom command crashed with exit code ${code}.`;
+	}
+	logAdv(cfg);
 }
 
-function runCustomCommand(command: string, prettyLog: boolean = true, cwd = process.cwd(), index?: number) {
-    let cmdTrim = command.trim();
-    log(COLORS.blue, `Running command: ${command}`);
+function runCustomCommand(
+	command: string,
+	prettyLog: boolean = true,
+	cwd = process.cwd(),
+	index?: number,
+) {
+	const cmdTrim = command.trim();
+	log(COLORS.blue, `Running command: ${command}`);
 
-    const opts: SpawnOptions = {
-        shell: true,
-        cwd,
-    }
-    if (!prettyLog) opts.stdio = "inherit";
+	const opts: SpawnOptions = {
+		shell: true,
+		cwd,
+	};
+	if (!prettyLog) opts.stdio = "inherit";
 
-    const cmdProcess = spawn(command, opts);
-    customCommandsProcess.set(cmdTrim, cmdProcess);
+	const cmdProcess = spawn(command, opts);
+	customCommandsProcess.set(cmdTrim, cmdProcess);
 
-    if (prettyLog) {
-        cmdProcess.stdout.on("data", (data) => {
-            logAdv({
-                color: COLORS.cyan,
-                prefix: "[stdout]",
-                msg: data.toString().trim(),
-                index
-            });
-        });
-        cmdProcess.stderr.on("data", (data) => {
-            logAdv({
-                color: COLORS.magenta,
-                prefix: "[stderr]",
-                msg: data.toString().trim(),
-                index
-            });
-        });
-    }
+	if (prettyLog) {
+		cmdProcess.stdout.on("data", data => {
+			logAdv({
+				color: COLORS.cyan,
+				prefix: "[stdout]",
+				msg: data.toString().trim(),
+				index,
+			});
+		});
+		cmdProcess.stderr.on("data", data => {
+			logAdv({
+				color: COLORS.magenta,
+				prefix: "[stderr]",
+				msg: data.toString().trim(),
+				index,
+			});
+		});
+	}
 
-    cmdProcess.on("exit", (code) => {
-        logExit(code);
-        if (customCommandsProcess.has(cmdTrim)) customCommandsProcess.delete(cmdTrim);
-    });
+	cmdProcess.on("exit", code => {
+		logExit(code);
+		if (customCommandsProcess.has(cmdTrim))
+			customCommandsProcess.delete(cmdTrim);
+	});
 }
 
 async function exitEvent() {
-    log(COLORS.green, "Process interrupted. Exiting...");
-    rl.close();
-    processes.forEach((process) => process.stopProcess());
-    customCommandsProcess.forEach((process) => killHard(process.pid));
-    process.exit(0);
+	log(COLORS.green, "Process interrupted. Exiting...");
+	rl.close();
+	processes.forEach(process => process.stopProcess());
+	customCommandsProcess.forEach(process => killHard(process.pid));
+	process.exit(0);
 }
 
 // Ensure Ctrl+C exits immediately
