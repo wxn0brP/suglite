@@ -19,7 +19,7 @@ export class SugliteProcess {
 
 		this.restartTimeout = setTimeout(async () => {
 			await this.restartProcess();
-		}, 250 + this.config.delay);
+		}, 750 + this.config.delay);
 	}
 
 	// Function to start/restart the process
