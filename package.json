@@ -16,7 +16,7 @@
         "@types/picomatch": "^4.0.3",
         "@types/yargs": "^17.0.35",
         "@wxn0brp/biome": "*",
-        "typescript": "^6"
+        "typescript": "^7.0.0"
     },
     "dependencies": {
         "picomatch": "^4.0.4",
