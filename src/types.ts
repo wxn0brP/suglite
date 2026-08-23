@@ -18,3 +18,7 @@ export interface SugliteConfig {
 	startup_cmd?: string[];
 	cwd?: string;
 }
+
+declare global {
+	var multiRun: boolean;
+}
