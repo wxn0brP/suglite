@@ -154,10 +154,11 @@ export const argv = await yargs(hideBin(rawArgs))
 	.command("id", "display instance info", () => {
 		log(
 			COLORS.cyan,
-			"Dir: ",
+			"Dir:\t\t\t",
 			import.meta.dirname.split("/").slice(0, -1).join("/"),
 		);
-		log(COLORS.cyan, "Version: ", version);
+		log(COLORS.cyan, "Version:\t\t", version);
+		log(COLORS.cyan, "Global config:\t", globalConfigPath);
 		process.exit(0);
 	})
 
