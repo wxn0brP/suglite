@@ -1,6 +1,6 @@
 {
     "name": "suglite",
-    "version": "0.4.0",
+    "version": "0.4.1",
     "main": "src/index.ts",
     "author": "wxn0brP",
     "license": "MIT",
