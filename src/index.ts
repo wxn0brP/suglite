@@ -15,6 +15,10 @@ if (argv.run !== undefined) {
 	const child = spawn(cmd, {
 		stdio: "inherit",
 		shell: true,
+		env: {
+			...process.env,
+			SUGLITE_BUILD_ID: "1",
+		},
 	});
 
 	child.on("exit", code => {

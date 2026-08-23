@@ -28,6 +28,8 @@ export function getEmptyConfig() {
 		watch: [],
 		ignore: [],
 		restart_cmd: "",
+		restart_cmd_first_run: true,
+		clear_screen: true,
 		cmds: {},
 		history: 100,
 		delay: 0,

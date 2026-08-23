@@ -38,6 +38,15 @@ Use a predefined configuration: (e.g. for python)
 suglite -p py
 ```
 
+## Restart Counter & Build ID
+
+Every restart increments a counter,
+injected as the `SUGLITE_BUILD_ID` environment variable:
+
+```sh
+bun run build --define BUILD_ID=$SUGLITE_BUILD_ID
+```
+
 See `suglite --help` for more options.
 
 ## Global Configuration  

@@ -36,6 +36,14 @@
             "type": "string",
             "$comment": "Command executed before restarting process"
         },
+        "restart_cmd_first_run": {
+            "type": "boolean",
+            "$comment": "Whether restart_cmd is executed on first start (default: true)"
+        },
+        "clear_screen": {
+            "type": "boolean",
+            "$comment": "Clear the console on every restart without first run (default: true)"
+        },
         "cmds": {
             "type": "object",
             "additionalProperties": {

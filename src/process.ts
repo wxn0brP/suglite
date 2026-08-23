@@ -7,6 +7,7 @@ import { startWatcher } from "./watcher";
 export class SugliteProcess {
 	proc: ChildProcess | null = null;
 	restartTimeout: NodeJS.Timeout | null = null;
+	buildId = 0;
 	index: number;
 
 	constructor(private config: SugliteConfig) {
@@ -24,19 +25,36 @@ export class SugliteProcess {
 
 	// Function to start/restart the process
 	async restartProcess() {
+		const buildId = ++this.buildId;
+		const env = {
+			...process.env,
+			SUGLITE_BUILD_ID: String(buildId),
+		};
+
 		if (this.proc) await this.stopProcess();
 		if (this.config.delay)
 			await new Promise(resolve => setTimeout(resolve, this.config.delay));
 
-		if (this.config.restart_cmd) {
-			exec(this.config.restart_cmd, (err, stdout) => {
-				if (stdout) log(COLORS.yellow, stdout.trim());
-			});
+		if (this.config.clear_screen && buildId > 1) console.clear();
+
+		if (
+			this.config.restart_cmd &&
+			(buildId > 1 || this.config.restart_cmd_first_run !== false)
+		) {
+			exec(
+				this.config.restart_cmd,
+				{
+					env,
+				},
+				(err, stdout) => {
+					if (stdout) log(COLORS.yellow, stdout.trim());
+				},
+			);
 		}
 
 		logAdv({
 			color: COLORS.yellow,
-			prefix: "Restarting...",
+			prefix: `Restarting... #${buildId}`,
 			index: this.index,
 		});
 		logAdv({
@@ -50,6 +68,7 @@ export class SugliteProcess {
 			stdio: "inherit",
 			shell: true,
 			cwd: this.config.cwd,
+			env,
 		});
 
 		const pid = this.proc.pid;
@@ -68,7 +87,7 @@ export class SugliteProcess {
 				color: success ? COLORS.green : COLORS.red,
 				prefix: success
 					? "Majestic exit."
-					: `Process crashed with exit code ${code}.`,
+					: `Process crashed with exit code ${code}.${process.platform === "win32" ? " Using Windows? That explains a lot." : ""}`,
 				index: this.index,
 			});
 			this.proc = null;

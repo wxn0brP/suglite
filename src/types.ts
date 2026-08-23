@@ -5,6 +5,8 @@ export interface SugliteConfig {
 	watch?: string[];
 	ignore?: string[];
 	restart_cmd?: string;
+	restart_cmd_first_run?: boolean;
+	clear_screen?: boolean;
 	cmds?: Record<string, string>;
 	history?: number;
 	delay?: number;
