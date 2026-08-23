@@ -16,11 +16,11 @@
         "@types/picomatch": "^4.0.3",
         "@types/yargs": "^17.0.35",
         "@wxn0brp/biome": "*",
-        "typescript": "^6"
+        "typescript": "^7"
     },
     "dependencies": {
-        "picomatch": "^4.0.4",
-        "yargs": "^18.0.0"
+        "picomatch": "^4.0.5",
+        "yargs": "^18.1.0"
     },
     "files": [
         "src/**/*",
