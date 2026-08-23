@@ -49,6 +49,14 @@ bun run build --define BUILD_ID=$SUGLITE_BUILD_ID
 
 See `suglite --help` for more options.
 
+## Shell Completions
+
+Generate a completion script for your shell:
+
+```sh
+suglite completions >> ~/.zshrc
+```
+
 ## Global Configuration  
 
 Global configuration is stored in:

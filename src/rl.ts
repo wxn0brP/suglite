@@ -2,15 +2,16 @@ import { ChildProcess } from "child_process";
 import { existsSync, writeFileSync } from "fs";
 import Readline from "readline";
 import { configs, mainConfig } from "./config";
+import { HISTORY_FILE } from "./const";
 import { COLORS, log } from "./logger";
+import { multi } from "./multi";
 import { killHard, processes } from "./process";
 import { appendHistory, runCustomCommand, uniqueHistory } from "./rl.utils";
-import { multi } from "./multi";
 
 export const customCommandsProcess = new Map<string, ChildProcess>();
 
 if (mainConfig.history && mainConfig.history > 0) {
-	if (!existsSync(".suglite_history")) writeFileSync(".suglite_history", "");
+	if (!existsSync(HISTORY_FILE)) writeFileSync(HISTORY_FILE, "");
 }
 
 const rlOpts: Readline.ReadLineOptions = {

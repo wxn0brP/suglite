@@ -1,4 +1,11 @@
-import { existsSync, mkdirSync, rmSync, writeFileSync } from "fs";
+import {
+	existsSync,
+	mkdirSync,
+	readdirSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from "fs";
 import { homedir } from "os";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
@@ -9,6 +16,7 @@ import {
 	loadPredefinedConfig,
 	saveJson5,
 } from "./config.utils";
+import { HISTORY_FILE, MULTI_FILE } from "./const";
 import { groupArguments } from "./groupArgs";
 import { COLORS, log } from "./logger";
 import { SugliteConfig } from "./types";
@@ -170,6 +178,80 @@ export const argv = await yargs(hideBin(rawArgs))
 		}
 		process.exit(0);
 	})
+
+	.command("ls", "List predefined configs", () => {
+		const dir = getSuglitePath() + "config/";
+		const files = readdirSync(dir)
+			.filter(f => f.endsWith(".json5"))
+			.sort();
+
+		if (files.length === 0) {
+			log(COLORS.red, "No predefined configs found");
+			process.exit(1);
+		}
+
+		log(COLORS.green, "Available predefined configs:");
+		for (const f of files) {
+			const name = f.replace(/\.json5$/, "");
+			const cfg = loadJson(dir + f);
+			log(COLORS.green, "", `${name} -> ${cfg.cmd ?? "(no cmd)"}`);
+		}
+		process.exit(0);
+	})
+
+	.command(
+		"history [clear]",
+		"Show or clear REPL history",
+		yargs =>
+			yargs.option("clear", {
+				type: "boolean",
+				description: "Clear history",
+			}),
+		({ clear }) => {
+			if (clear) {
+				writeFileSync(HISTORY_FILE, "");
+				log(COLORS.green, "History cleared");
+				process.exit(0);
+			}
+
+			if (!existsSync(HISTORY_FILE)) {
+				log(COLORS.red, "No history file:", HISTORY_FILE);
+				process.exit(1);
+			}
+
+			const lines = readFileSync(HISTORY_FILE, "utf8")
+				.split("\n")
+				.filter(Boolean);
+			if (lines.length === 0) {
+				log(COLORS.yellow, "History is empty");
+				process.exit(0);
+			}
+
+			lines.forEach((line, i) => log(COLORS.green, "", `${i + 1}\t${line}`));
+			process.exit(0);
+		},
+	)
+
+	.command("mm", "Make multi config (suglite.multi.json5)", () => {
+		if (existsSync(MULTI_FILE)) {
+			log(COLORS.red, MULTI_FILE + " already exists");
+			process.exit(1);
+		}
+
+		saveJson5(MULTI_FILE, [
+			"./subproject",
+			{
+				cmd: "echo hello",
+				watch: [
+					"src",
+				],
+			},
+		]);
+		log(COLORS.green, MULTI_FILE + " created");
+		process.exit(0);
+	})
+
+	.completion("completions")
 
 	.help()
 	.alias("h", "help")

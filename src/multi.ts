@@ -5,19 +5,18 @@ import { getEmptyConfig, loadJson } from "./config.utils";
 import { COLORS, log } from "./logger";
 import { addProcess } from "./process";
 import { SugliteConfig } from "./types";
-
-export const file = "suglite.multi.json5";
+import { MULTI_FILE } from "./const";
 
 export function multi() {
 	if (globalThis.multiRun) return log(COLORS.red, "Multi already running");
 	globalThis.multiRun = true;
 
-	if (!existsSync(file)) {
-		log(COLORS.red, `File ${file} not found`);
+	if (!existsSync(MULTI_FILE)) {
+		log(COLORS.red, `File ${MULTI_FILE} not found`);
 		return;
 	}
 
-	const multiConfigRaw = loadJson<(string | SugliteConfig)[]>(file);
+	const multiConfigRaw = loadJson<(string | SugliteConfig)[]>(MULTI_FILE);
 
 	const multiConfig = multiConfigRaw.map(config => {
 		if (typeof config === "string") {
