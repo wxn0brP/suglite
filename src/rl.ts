@@ -173,6 +173,7 @@ export function handleLine(input: string) {
 			log(COLORS.green, "", "show-m -> Show multiple configs");
 			log(COLORS.green, "", "server [port] -> Start server");
 			log(COLORS.green, "", "server stop -> Stop server");
+			log(COLORS.green, "", "server open / so -> Open server link");
 			log(COLORS.green, "Trusted shells:", trustedShells.join(", "));
 			break;
 		case "config":
@@ -204,6 +205,8 @@ export function handleLine(input: string) {
 				);
 			}
 			break;
+		case "so":
+			cmdTrim = "server open";
 	}
 
 	if (cmdTrim.startsWith("server")) {
