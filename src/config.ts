@@ -39,6 +39,8 @@ const rawArgs = groupArguments(process.argv);
 export const argv = await yargs(hideBin(rawArgs))
 	.scriptName("suglite")
 	.version(version)
+	.usage("$0 [options] [-- <cmd args>]")
+	.env("SUGLITE")
 
 	// suglite config
 	.option("ref", {
@@ -91,6 +93,22 @@ export const argv = await yargs(hideBin(rawArgs))
 		description: "Port for server",
 	})
 
+	.group(
+		[
+			"ref",
+			"cmd",
+			"args",
+			"watch",
+			"ignore",
+			"restart-cmd",
+			"history",
+			"delay",
+			"trusted-shells",
+			"server",
+		],
+		"Config:",
+	)
+
 	// runtime config
 	.option("p", {
 		type: "string",
@@ -121,6 +139,17 @@ export const argv = await yargs(hideBin(rawArgs))
 		description: "Run multiple instances",
 		default: false,
 	})
+
+	.group(
+		[
+			"p",
+			"run",
+			"file",
+			"igc",
+			"multi",
+		],
+		"Runtime:",
+	)
 
 	// make config
 	.command(
@@ -251,6 +280,11 @@ export const argv = await yargs(hideBin(rawArgs))
 		process.exit(0);
 	})
 
+	.recommendCommands()
+	.example("$0 -w src -c bun run build", "Build with watch on src directory")
+	.example("$0 -p python", "Use python config")
+	.epilogue("Report bugs: https://github.com/wxn0brP/suglite")
+
 	.completion("completions")
 
 	.help()
@@ -297,7 +331,7 @@ if (argv.cmd) mainConfig.cmd = argv.cmd;
 if (argv.args) mainConfig.args = argv.args as string[];
 if (argv.watch) mainConfig.watch = argv.watch as string[];
 if (argv.ignore) mainConfig.ignore = argv.ignore as string[];
-if (argv.restart_cmd) mainConfig.restart_cmd = argv.restartCmd;
+if (argv.restartCmd) mainConfig.restart_cmd = argv.restartCmd;
 if (argv.history) mainConfig.history = argv.history;
 if (argv.delay) mainConfig.delay = argv.delay;
 if (argv.trustedShells)
