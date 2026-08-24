@@ -1,7 +1,6 @@
 import { spawn, SpawnOptions } from "child_process";
-import { log } from "console";
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from "fs";
-import { COLORS, logAdv, LogConfig } from "./logger";
+import { COLORS, log, logAdv, LogConfig } from "./logger";
 import { customCommandsProcess } from "./rl";
 
 export function runCustomCommand(
