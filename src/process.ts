@@ -1,6 +1,7 @@
-import { exec, spawn, ChildProcess, execSync } from "child_process";
+import { ChildProcess, exec, execSync, spawn } from "child_process";
 import { COLORS, log, logAdv } from "./logger";
 import { customCommandsProcess, handleLine } from "./rl";
+import { runCustomCommand } from "./rl.utils";
 import { SugliteConfig } from "./types";
 import { startWatcher } from "./watcher";
 
@@ -152,7 +153,7 @@ export class SugliteProcess {
 			typeof this.config.server !== "boolean" &&
 			!Number.isNaN(+this.config.server)
 		) {
-			handleLine(`server ${this.config.server}`);
+			runCustomCommand(`wxn-server ${this.config.server}`, false);
 		}
 	}
 }
@@ -199,10 +200,24 @@ process.on("exit", () => {
 	processes.forEach(process => process.stopProcess());
 });
 
-async function exitEvent() {
+export async function exitEvent(code = 0) {
+	log(COLORS.green, "Process interrupted. Exiting...");
+	globalThis.rl?.close?.();
 	processes.forEach(process => process.stopProcess());
 	customCommandsProcess.forEach((process, i) => killHard(process.pid));
-	process.exit();
+	process.exit(code);
 }
-process.on("SIGINT", exitEvent);
-process.on("SIGTERM", exitEvent);
+process.on("SIGINT", () => exitEvent());
+process.on("SIGTERM", () => exitEvent());
+
+process.on("unhandledRejection", (reason, p) => {
+	log(COLORS.red, "Unhandled rejection. A promise broke its word.");
+	console.log(p, "reason:", reason);
+	exitEvent(1);
+});
+
+process.on("uncaughtException", (err, origin) => {
+	log(COLORS.red, "Uncaught exception. Something exploded.");
+	console.log(err, "origin:", origin);
+	exitEvent(1);
+});

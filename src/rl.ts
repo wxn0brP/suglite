@@ -5,7 +5,7 @@ import { configs, mainConfig } from "./config";
 import { HISTORY_FILE } from "./const";
 import { COLORS, log } from "./logger";
 import { multi } from "./multi";
-import { killHard, processes } from "./process";
+import { exitEvent, killHard, processes } from "./process";
 import { appendHistory, runCustomCommand, uniqueHistory } from "./rl.utils";
 
 export const customCommandsProcess = new Map<string, ChildProcess>();
@@ -55,6 +55,7 @@ const trustedShells = [
 
 // Handle terminal input events
 const rl = Readline.createInterface(rlOpts);
+globalThis.rl = rl;
 rl.on("line", handleLine);
 
 function interpolateCmd(template: string, args: string[]): string {
@@ -194,18 +195,21 @@ export function handleLine(input: string) {
 	}
 
 	if (cmdTrim.startsWith("server")) {
-		const exists =
-			[
-				...customCommandsProcess.keys(),
-			].filter(key => key.startsWith("server")).length > 0;
+		const keys = [
+			...customCommandsProcess.keys(),
+		];
+		const exists = keys.filter(key => key.startsWith("wxn-server")).length > 0;
 		if (cmdTrim.includes("stop")) {
 			if (!exists) {
 				log(COLORS.red, "Server not running");
 				return;
 			}
 			log(COLORS.green, "Stopping server...");
-			killHard(customCommandsProcess.get("server").pid);
-			customCommandsProcess.delete("server");
+			const ids = keys.filter(key => key.startsWith("wxn-server"));
+			ids.forEach(id => {
+				killHard(customCommandsProcess.get(id).pid);
+				customCommandsProcess.delete(id);
+			});
 			return;
 		}
 
@@ -232,18 +236,12 @@ export function handleLine(input: string) {
 		}
 
 		log(COLORS.green, "Starting server...");
-		runCustomCommand(cmdTrim, false);
+		const split = cmdTrim.split(" ");
+		split[0] = "wxn-server";
+		runCustomCommand(split.join(" "), false);
 	}
 }
 
-async function exitEvent() {
-	log(COLORS.green, "Process interrupted. Exiting...");
-	rl.close();
-	processes.forEach(process => process.stopProcess());
-	customCommandsProcess.forEach(process => killHard(process.pid));
-	process.exit(0);
-}
-
 // Ensure Ctrl+C exits immediately
-rl.on("SIGINT", exitEvent);
-rl.on("SIGTERM", exitEvent);
+rl.on("SIGINT", () => exitEvent());
+rl.on("SIGTERM", () => exitEvent());
