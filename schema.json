@@ -113,6 +113,13 @@
                 "type": "string"
             },
             "$comment": "List of commands to execute on startup"
+        },
+        "env": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "string"
+            },
+            "$comment": "Environment variables passed to the process"
         }
     },
     "additionalProperties": false

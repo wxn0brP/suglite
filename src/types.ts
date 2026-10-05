@@ -19,6 +19,7 @@ export interface SugliteConfig {
 	};
 	startup_cmd?: string[];
 	cwd?: string;
+	env?: Record<string, string>;
 }
 
 declare global {

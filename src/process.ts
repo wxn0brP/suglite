@@ -29,6 +29,7 @@ export class SugliteProcess {
 		const buildId = ++this.buildId;
 		const env = {
 			...process.env,
+			...this.config.env,
 			SUGLITE_BUILD_ID: String(buildId),
 		};
 

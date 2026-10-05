@@ -42,6 +42,7 @@ export function getEmptyConfig() {
 		},
 		startup_cmd: [],
 		cwd: process.cwd(),
+		env: {},
 	};
 	return config;
 }
