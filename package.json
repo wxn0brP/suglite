@@ -1,6 +1,6 @@
 {
     "name": "suglite",
-    "version": "0.4.2",
+    "version": "0.4.3",
     "main": "src/index.ts",
     "author": "wxn0brP",
     "license": "MIT",
@@ -19,8 +19,8 @@
         "typescript": "^7"
     },
     "dependencies": {
-        "picomatch": "^4.0.5",
-        "yargs": "^18.1.0"
+        "picomatch": "^4.0.7",
+        "yargs": "^18.2.0"
     },
     "files": [
         "src/**/*",
