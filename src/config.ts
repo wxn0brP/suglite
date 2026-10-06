@@ -3,7 +3,6 @@ import {
 	mkdirSync,
 	readdirSync,
 	readFileSync,
-	rmSync,
 	writeFileSync,
 } from "fs";
 import { homedir } from "os";
@@ -199,14 +198,25 @@ export const argv = await yargs(hideBin(rawArgs))
 		process.exit(0);
 	})
 
-	.command("migrate", "migrate config from json to json5", () => {
-		if (existsSync("suglite.json")) {
-			const config = loadJson("suglite.json");
-			saveJson5("suglite.json5", config);
-			rmSync("suglite.json");
-		}
-		process.exit(0);
-	})
+	.command(
+		"migrate [source]",
+		"migrate config",
+		yargs =>
+			yargs.positional("source", {
+				type: "string",
+				description: "Migration source file",
+				choices: [
+					"suglite.json",
+					"nodemon.json",
+					".nodemonrc",
+				],
+			}),
+		async ({ source }) => {
+			const { migrate } = await import("./migrate");
+			migrate(source);
+			process.exit(0);
+		},
+	)
 
 	.command("ls", "List predefined configs", () => {
 		const dir = getSuglitePath() + "config/";
