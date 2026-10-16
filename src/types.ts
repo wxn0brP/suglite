@@ -10,6 +10,7 @@ export interface SugliteConfig {
 	cmds?: Record<string, string>;
 	history?: number;
 	delay?: number;
+	snooze?: number;
 	trustedShells?: string[];
 	server?: false | number;
 	server_map?: {

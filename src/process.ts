@@ -9,17 +9,52 @@ export class SugliteProcess {
 	proc: ChildProcess | null = null;
 	restartTimeout: NodeJS.Timeout | null = null;
 	buildId = 0;
+	blockedUntil = 0;
+	snooze: number;
 	index: number;
 
 	constructor(private config: SugliteConfig) {
+		this.snooze = config.snooze ?? 0;
 		startWatcher(config, this);
 	}
 
+	blockRestarts(seconds: number) {
+		this.blockedUntil = Date.now() + seconds * 1000;
+		logAdv({
+			color: COLORS.yellow,
+			prefix: `Auto-restarts on hold for ${seconds}s. Use 'rs' to force.`,
+			index: this.index,
+		});
+	}
+
+	setSnooze(seconds: number) {
+		this.snooze = seconds;
+		logAdv({
+			color: COLORS.yellow,
+			prefix:
+				seconds > 0
+					? `Snooze set to ${seconds}s after each restart.`
+					: "Snooze disabled.",
+			index: this.index,
+		});
+	}
+
 	// Debounce restart
-	async startProcess() {
+	async startProcess(force = false) {
 		if (this.restartTimeout) clearTimeout(this.restartTimeout);
 
 		this.restartTimeout = setTimeout(async () => {
+			if (force) {
+				this.blockedUntil = 0;
+			} else if (Date.now() < this.blockedUntil) {
+				const left = Math.ceil((this.blockedUntil - Date.now()) / 1000);
+				logAdv({
+					color: COLORS.yellow,
+					prefix: `Restart blocked for ${left}s more.`,
+					index: this.index,
+				});
+				return;
+			}
 			await this.restartProcess();
 		}, 750 + this.config.delay);
 	}
@@ -81,6 +116,15 @@ export class SugliteProcess {
 				index: this.index,
 			});
 			return;
+		}
+
+		if (this.snooze > 0) {
+			this.blockedUntil = Date.now() + this.snooze * 1000;
+			logAdv({
+				color: COLORS.yellow,
+				prefix: `Snoozed: auto-restarts blocked for ${this.snooze}s.`,
+				index: this.index,
+			});
 		}
 
 		this.proc.on("exit", code => {

@@ -33,6 +33,7 @@ export function getEmptyConfig() {
 		cmds: {},
 		history: 100,
 		delay: 0,
+		snooze: 0,
 		trustedShells: [],
 		server: false,
 		server_map: {

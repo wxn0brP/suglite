@@ -121,7 +121,7 @@ export function handleLine(input: string) {
 
 	switch (cmdTrim) {
 		case "rs":
-			processes[index].startProcess();
+			processes[index].startProcess(true);
 			break;
 		case "quit":
 		case "exit":
@@ -148,6 +148,16 @@ export function handleLine(input: string) {
 			);
 			log(COLORS.green, "System commands:");
 			log(COLORS.green, "", "rs -> Restart process");
+			log(
+				COLORS.green,
+				"",
+				"hold <sec> / snooze <sec> -> Block automatic restarts for <sec> seconds",
+			);
+			log(
+				COLORS.green,
+				"",
+				"set-snooze <sec> -> Block auto-restarts for <sec> seconds after each restart",
+			);
 			log(COLORS.green, "", "quit/exit -> Exit");
 			log(COLORS.green, "", "help -> Show help");
 			log(COLORS.green, "", "config -> Show current config");
@@ -192,6 +202,26 @@ export function handleLine(input: string) {
 			break;
 		case "so":
 			cmdTrim = "server open";
+	}
+
+	if (/^set-snooze\b/.test(cmdTrim)) {
+		const seconds = parseFloat(cmdTrim.split(/\s+/)[1]);
+		if (Number.isNaN(seconds) || seconds < 0) {
+			log(COLORS.red, "Usage: set-snooze <seconds> (0 to disable)");
+			return;
+		}
+		processes[index].setSnooze(seconds);
+		return;
+	}
+
+	if (/^(hold|snooze)\b/.test(cmdTrim)) {
+		const seconds = parseFloat(cmdTrim.split(/\s+/)[1]);
+		if (Number.isNaN(seconds) || seconds <= 0) {
+			log(COLORS.red, "Usage: hold <seconds> (alias: snooze)");
+			return;
+		}
+		processes[index].blockRestarts(seconds);
+		return;
 	}
 
 	if (cmdTrim.startsWith("server")) {

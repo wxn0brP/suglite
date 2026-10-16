@@ -61,6 +61,11 @@
             "minimum": 0,
             "$comment": "debounce delay in seconds"
         },
+        "snooze": {
+            "type": "number",
+            "minimum": 0,
+            "$comment": "Block automatic restarts for N seconds after each successful restart (0 = disabled)"
+        },
         "trustedShells": {
             "type": "array",
             "items": {

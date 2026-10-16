@@ -81,6 +81,11 @@ export const argv = await yargs(hideBin(rawArgs))
 		type: "number",
 		description: "Delay before restarting",
 	})
+	.option("snooze", {
+		alias: "S",
+		type: "number",
+		description: "Block automatic restarts for N seconds after each restart",
+	})
 	.option("trusted-shells", {
 		alias: "t",
 		type: "array",
@@ -102,6 +107,7 @@ export const argv = await yargs(hideBin(rawArgs))
 			"restart-cmd",
 			"history",
 			"delay",
+			"snooze",
 			"trusted-shells",
 			"server",
 		],
@@ -344,6 +350,7 @@ if (argv.ignore) mainConfig.ignore = argv.ignore as string[];
 if (argv.restartCmd) mainConfig.restart_cmd = argv.restartCmd;
 if (argv.history) mainConfig.history = argv.history;
 if (argv.delay) mainConfig.delay = argv.delay;
+if (argv.snooze) mainConfig.snooze = argv.snooze;
 if (argv.trustedShells)
 	mainConfig.trustedShells = argv.trustedShells as string[];
 if (argv.server) mainConfig.server = argv.server;
